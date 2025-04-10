@@ -1,1 +1,1 @@
-[PASTE FROM CANVAS ALREADY KNOWN CONTENT — will reinsert after uploading manually]
+<the full app.py code from canvas will be inserted here>
