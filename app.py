@@ -5,45 +5,30 @@ from chat import LLM
 
 st.set_page_config(page_title="Questo - Creativity Assistant", layout="centered")
 
-# Initialize session state
-if 'llm' not in st.session_state:
-    st.session_state.llm = LLM()
-if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = []
+# 初始化
+if 'page' not in st.session_state:
+    st.session_state.page = 1
 if 'user_id' not in st.session_state:
     st.session_state.user_id = f"User_{datetime.now().strftime('%H%M%S')}"
+if 'chat_history' not in st.session_state:
+    st.session_state.chat_history = []
+if 'llm' not in st.session_state:
+    st.session_state.llm = LLM()
 
-# Admin mode toggle
-admin_mode = st.sidebar.checkbox("📊 教師後台報表 / Admin Dashboard")
+# 語言與文字設定
+language = st.selectbox("Choose your language / 選擇語言", ["English", "中文"], index=0)
+lang_code = "E" if language == "English" else "C"
 
-if admin_mode:
-    st.title("📊 教師後台報表")
-    try:
-        df = pd.read_excel("Database.xlsx")
-        st.markdown("### 所有互動紀錄")
-        st.dataframe(df)
+def next_page():
+    st.session_state.page += 1
 
-        st.markdown("### 📈 問題類型統計")
-        qtype_counts = df["問題類型"].value_counts().rename({"1": "指導性問題", "2": "創意問題"})
-        st.bar_chart(qtype_counts)
+def prev_page():
+    st.session_state.page -= 1
 
-        st.markdown("### 🧩 SCAMPER 類型分布")
-        scamper_counts = df["SCAMPER 類型"].value_counts()
-        st.bar_chart(scamper_counts)
-
-        st.markdown("### ⏱️ 提問時間軸")
-        df["時間戳記"] = pd.to_datetime(df["時間戳記"])
-        df_sorted = df.sort_values("時間戳記")
-        st.line_chart(df_sorted.groupby(df_sorted["時間戳記"].dt.floor('min')).size())
-    except Exception as e:
-        st.error(f"無法讀取 Excel 檔案：{e}")
-else:
-    # Language selection
-    language = st.selectbox("Choose your language / 選擇語言", ["English", "中文"], index=0)
-    lang_code = 'E' if language == 'English' else 'C'
-
-    # Display challenge description
-    if lang_code == 'E':
+# 第 1 頁：挑戰說明
+if st.session_state.page == 1:
+    st.title("🏁 活動挑戰說明")
+    if lang_code == "E":
         st.title("Challenge")
         st.markdown('''You have joined a competition that aims at sourcing the best idea for a hotel located in a business district of an urban city to find good uses of the waste it produces. The hotel is situated next to a hospital, a convention center, and a major tourist attraction.  
 **Guests include:** Business travelers, Convention Attendees, Friends and Families of Patients, Tourists  
@@ -55,11 +40,6 @@ To win the competition, your ideas should:
 You do not have to worry about the costs and resources required.  
 You do not have to delight all types of guests.
 ''')
-        activity_prompt = "What are three of the most creative ideas you can think of?"
-        ai_intro = "Now you can use our AI Questioning Assistant 'Questo' to improve your questioning technique. Spend at least 5 minutes asking about how to reuse old hotel towels to delight guests. Questo will give you feedback on your questions, not answers."
-        input_prompt = "Hi! I'm Questo, your friendly AI assistant. Ask me anything about reusing hotel towels creatively. Type 'end' to move on."
-        post_prompt = "After chatting with ChatGPT, what are the three most creative ideas you came up with?"
-        chatgpt_link_label = "Click here to chat with real ChatGPT"
     else:
         st.title("挑戰")
         st.markdown('''你要參加一個比賽，是在為一間位於都市商業區的飯店尋找最佳理念，找到飯店產生的廢棄物的良好用途。該飯店位於醫院、會議中心和主要旅遊景點旁邊。  
@@ -72,62 +52,77 @@ You do not have to delight all types of guests.
 你不必擔心實施的成本和資源。  
 你不必取悅所有類型的客人。
 ''')
-        activity_prompt = "要贏得比賽，您能想到的最具創意的三個想法是什麼？"
-        ai_intro = "現在，你可以使用我們的人工智慧提問助手「小Q」來改善你的提問技巧，並產生更有效的問題。請花至少 5 分鐘的時間，提出與「如何利用舊飯店毛巾取悅顧客」相關的問題。小Q 不會提供答案，而是給你建議與回饋。"
-        input_prompt = "嗨，你好！我是「小Q」，你友善的人工智慧提問小幫手。我來幫助你針對「如何將舊飯店毛巾變成讓顧客開心的東西」這個主題，創造出很棒的問題！(輸入「結束」就可以進入下一階段囉！)"
-        post_prompt = "與 ChatGPT 聊天後，你能想到的最具創意的三個想法是什麼？"
-        chatgpt_link_label = "點我開啟 ChatGPT 對話頁面"
 
-    # Activity entry
-    st.header(activity_prompt)
-    activity = st.text_area("", value="")
+    if st.button("下一頁 / Next"):
+        next_page()
 
-    if st.button("Start"):
+# 第 2 頁：輸入創意構想
+elif st.session_state.page == 2:
+    st.title("💡 初步構想發想")
+    activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas")
+    if activity:
+        st.session_state.activity = activity
+
+    if st.button("下一頁 / Next"):
         st.session_state.llm.setup_language_and_activity(lang_code, activity)
-        st.success("Activity and language set!")
+        next_page()
+    st.button("上一頁 / Back", on_click=prev_page)
 
-    # AI guidance intro
-    st.subheader("🧠 " + ai_intro)
-    question = st.text_input(input_prompt)
-    if st.button("送出問題 / Submit question"):
-        llm_response = st.session_state.llm.Chat(question, lang_code, activity)
-        st.session_state.chat_history.append((question, llm_response))
+# 第 3 頁：與小Q AI 對話
+elif st.session_state.page == 3:
+    st.title("🧠 與小Q AI 助教對話")
+    question = st.text_input("請輸入你想問小Q的問題（輸入 'end' 結束對話）")
+    if st.button("送出問題 / Submit"):
+        if question.lower() != "end":
+            llm_response = st.session_state.llm.Chat(question, lang_code, st.session_state.activity)
+            st.session_state.chat_history.append((question, llm_response))
 
-        qtype = llm_response['OUTPUT']['CLS']
-        if qtype == '1':
-            st.info("**AI Feedback (Guidance):**\n" + llm_response['OUTPUT']['GUIDE'])
-        elif qtype == '2':
-            st.info("**AI Feedback (Evaluation):**\n" + llm_response['OUTPUT']['EVAL'])
-            st.success("**Suggested Better Question:**\n" + llm_response['OUTPUT']['NEWQ'])
-        else:
-            st.warning("The input does not seem to be a question. Please try again.")
+            with st.chat_message("user"):
+                st.write(question)
+            with st.chat_message("assistant"):
+                if llm_response['OUTPUT']['CLS'] == '1':
+                    st.write(llm_response['OUTPUT']['GUIDE'])
+                elif llm_response['OUTPUT']['CLS'] == '2':
+                    st.write(llm_response['OUTPUT']['EVAL'])
+                    st.markdown("**📝 改寫建議：** " + llm_response['OUTPUT']['NEWQ'])
 
-        try:
-            df = pd.read_excel("Database.xlsx")
-        except:
-            df = pd.DataFrame()
+            # 儲存紀錄
+            try:
+                df = pd.read_excel("Database.xlsx")
+            except:
+                df = pd.DataFrame()
 
-        new_row = {
-            "時間戳記": datetime.now().isoformat(),
-            "使用者編號": st.session_state.user_id,
-            "語言": language,
-            "原始問題": question,
-            "問題類型": qtype,
-            "AI 回饋": llm_response['OUTPUT']['GUIDE'] or llm_response['OUTPUT']['EVAL'],
-            "改寫建議": llm_response['OUTPUT']['NEWQ'],
-            "SCAMPER 類型": llm_response['MISC']['SCAMPER_ELEMENT'],
-            "成本估算": llm_response['MISC']['cost_input'] + llm_response['MISC']['cost_output']
-        }
-        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-        df.to_excel("Database.xlsx", index=False)
-        st.success("✅ 資料已儲存到 Excel！")
+            new_row = {
+                "時間戳記": datetime.now().isoformat(),
+                "使用者編號": st.session_state.user_id,
+                "語言": language,
+                "原始問題": question,
+                "問題類型": llm_response['OUTPUT']['CLS'],
+                "AI 回饋": llm_response['OUTPUT']['GUIDE'] or llm_response['OUTPUT']['EVAL'],
+                "改寫建議": llm_response['OUTPUT']['NEWQ'],
+                "SCAMPER 類型": llm_response['MISC']['SCAMPER_ELEMENT'],
+                "成本估算": llm_response['MISC']['cost_input'] + llm_response['MISC']['cost_output']
+            }
+            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+            df.to_excel("Database.xlsx", index=False)
 
-    # ChatGPT phase
-    st.subheader("🌟 " + ("To spark your imagination, ask ChatGPT some questions about the towel challenge." if lang_code == 'E' else "為了激發你的想像力，請先向 ChatGPT 提出一些關於飯店毛巾挑戰的問題。"))
-    st.markdown(f"[{chatgpt_link_label}](https://chatgpt.com)")
-    final_ideas = st.text_area(post_prompt)
+    st.button("下一頁 / Next", on_click=next_page)
+    st.button("上一頁 / Back", on_click=prev_page)
 
-    if st.button("送出創意想法 / Submit final ideas"):
+# 第 4 頁：ChatGPT 外部啟發
+elif st.session_state.page == 4:
+    st.title("🌍 與 ChatGPT 對話（外部）")
+    st.markdown("👉 [點我開啟 ChatGPT 對話頁面](https://chatgpt.com)")
+    st.markdown("請與 ChatGPT 對話，獲得靈感後點選下一步")
+
+    st.button("下一頁 / Next", on_click=next_page)
+    st.button("上一頁 / Back", on_click=prev_page)
+
+# 第 5 頁：輸入創意成果
+elif st.session_state.page == 5:
+    st.title("📝 整合創意成果")
+    final_ideas = st.text_area("請輸入你與 ChatGPT 對話後，整理出的三個創意點子")
+    if st.button("送出創意"):
         try:
             df = pd.read_excel("Database.xlsx")
         except:
@@ -141,4 +136,56 @@ You do not have to delight all types of guests.
         }
         df = pd.concat([df, pd.DataFrame([final_row])], ignore_index=True)
         df.to_excel("Database.xlsx", index=False)
-        st.success("🎉 最終創意點子已送出並儲存！")
+        st.success("🎉 創意點子已送出並儲存！")
+
+    st.button("下一頁 / Next", on_click=next_page)
+    st.button("上一頁 / Back", on_click=prev_page)
+
+# 第 6 頁：問卷
+elif st.session_state.page == 6:
+    st.title("🎯 小Q體驗問卷調查")
+    st.markdown("請根據您在這次活動中的經驗，選擇最符合您感受的分數（1 = 非常不同意，5 = 非常同意）")
+
+    questions = [
+        "1. 小Q 提問助手的介面讓我感到容易使用",
+        "2. 整體互動流程清楚、順暢",
+        "3. 在與小Q的對話過程中，我感到被理解",
+        "4. 我知道下一步該做什麼，不感到迷惘",
+        "5. 小Q 的回饋對我來說容易理解",
+        "6. 小Q 幫助我產生了更多元的想法",
+        "7. 小Q 的引導讓我思考到原本沒想到的面向",
+        "8. 小Q 的建議對我提問的品質有明顯提升",
+        "9. 在與小Q互動後，我對創意挑戰更有信心",
+        "10. 小Q 幫助我更明確地聚焦於特定目標對象或情境",
+        "11. 我對這次與小Q的互動感到滿意",
+        "12. 如果有類似任務，我會願意再次使用小Q",
+        "13. 我會推薦小Q給其他同學或朋友使用",
+        "14. 小Q 在創意學習中是一個有幫助的工具",
+        "15. 整體而言，我的創意思考因為小Q而有所提升"
+    ]
+
+    survey_responses = []
+    for i, q in enumerate(questions):
+        response = st.radio(q, options=[1, 2, 3, 4, 5], key=f"survey_q{i+1}", horizontal=True)
+        survey_responses.append(response)
+
+    open_feedback = st.text_area("16. 你還有其他建議或回饋嗎？（非必填）")
+
+    if st.button("📩 送出問卷"):
+        try:
+            df = pd.read_excel("Database.xlsx")
+        except:
+            df = pd.DataFrame()
+
+        survey_result = {
+            "時間戳記": datetime.now().isoformat(),
+            "使用者編號": st.session_state.user_id,
+            "語言": language,
+        }
+        for i, val in enumerate(survey_responses):
+            survey_result[f"Q{i+1}"] = val
+        survey_result["開放建議"] = open_feedback
+
+        df = pd.concat([df, pd.DataFrame([survey_result])], ignore_index=True)
+        df.to_excel("Database.xlsx", index=False)
+        st.success("✅ 感謝您完成問卷，資料已儲存！")
