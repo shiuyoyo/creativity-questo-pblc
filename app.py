@@ -14,10 +14,8 @@ if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 if 'llm' not in st.session_state:
     st.session_state.llm = LLM()
-
-# 語言與文字設定
-language = st.selectbox("Choose your language / 選擇語言", ["English", "中文"], index=0)
-lang_code = "E" if language == "English" else "C"
+if 'language' not in st.session_state:
+    st.session_state.language = None
 
 def next_page():
     st.session_state.page += 1
@@ -25,50 +23,35 @@ def next_page():
 def prev_page():
     st.session_state.page -= 1
 
-# 第 1 頁：挑戰說明
+# 第 1 頁：選擇語言＋活動說明
 if st.session_state.page == 1:
     st.title("🏁 活動挑戰說明")
-    if lang_code == "E":
-        st.title("Challenge")
-        st.markdown('''You have joined a competition that aims at sourcing the best idea for a hotel located in a business district of an urban city to find good uses of the waste it produces. The hotel is situated next to a hospital, a convention center, and a major tourist attraction.  
-**Guests include:** Business travelers, Convention Attendees, Friends and Families of Patients, Tourists  
-You are required to propose three best ideas for the competition based on **old towels to be disposed of**.  
-To win the competition, your ideas should:
-- Help transform the waste at the hotel into something that delights the guests  
-- Be creative  
-**Important Notes:**  
-You do not have to worry about the costs and resources required.  
-You do not have to delight all types of guests.
-''')
+    st.session_state.language = st.selectbox("Choose your language / 選擇語言", ["English", "中文"], index=0)
+    lang_code = 'E' if st.session_state.language == 'English' else 'C'
+
+    if lang_code == 'E':
+        st.markdown("You have joined a competition... Guests include: Business travelers... Old towels to be disposed of...")
     else:
-        st.title("挑戰")
-        st.markdown('''你要參加一個比賽，是在為一間位於都市商業區的飯店尋找最佳理念，找到飯店產生的廢棄物的良好用途。該飯店位於醫院、會議中心和主要旅遊景點旁邊。  
-**其客群主要為：** 商務旅客、會議參加者、病人的親友、遊客  
-你需要利用被處理的舊毛巾為比賽提出三個最佳理念。  
-為了贏得比賽，你的理念應該：
-- 幫助將酒店的廢棄物轉化為令客人愉悅的東西  
-- 富有創意  
-**注意事項：**  
-你不必擔心實施的成本和資源。  
-你不必取悅所有類型的客人。
-''')
+        st.markdown("你要參加一個比賽，是在為一間位於都市商業區的飯店尋找最佳理念...")
 
     if st.button("下一頁 / Next"):
         next_page()
 
-# 第 2 頁：輸入創意構想
-elif st.session_state.page == 2:
+# 記住語言
+lang_code = 'E' if st.session_state.language == 'English' else 'C'
+
+# 第 2 頁：輸入初步創意
+if st.session_state.page == 2:
     st.title("💡 初步構想發想")
     activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas")
     if activity:
         st.session_state.activity = activity
 
     if st.button("下一頁 / Next"):
-        st.session_state.llm.setup_language_and_activity(lang_code, activity)
         next_page()
     st.button("上一頁 / Back", on_click=prev_page)
 
-# 第 3 頁：與小Q AI 對話
+# 第 3 頁：小Q AI 助教對話
 elif st.session_state.page == 3:
     st.title("🧠 與小Q AI 助教對話")
     question = st.text_input("請輸入你想問小Q的問題（輸入 'end' 結束對話）")
@@ -86,7 +69,6 @@ elif st.session_state.page == 3:
                     st.write(llm_response['OUTPUT']['EVAL'])
                     st.markdown("**📝 改寫建議：** " + llm_response['OUTPUT']['NEWQ'])
 
-            # 儲存紀錄
             try:
                 df = pd.read_excel("Database.xlsx")
             except:
@@ -95,7 +77,7 @@ elif st.session_state.page == 3:
             new_row = {
                 "時間戳記": datetime.now().isoformat(),
                 "使用者編號": st.session_state.user_id,
-                "語言": language,
+                "語言": st.session_state.language,
                 "原始問題": question,
                 "問題類型": llm_response['OUTPUT']['CLS'],
                 "AI 回饋": llm_response['OUTPUT']['GUIDE'] or llm_response['OUTPUT']['EVAL'],
@@ -109,7 +91,7 @@ elif st.session_state.page == 3:
     st.button("下一頁 / Next", on_click=next_page)
     st.button("上一頁 / Back", on_click=prev_page)
 
-# 第 4 頁：ChatGPT 外部啟發
+# 第 4 頁：與 ChatGPT 外部對話
 elif st.session_state.page == 4:
     st.title("🌍 與 ChatGPT 對話（外部）")
     st.markdown("👉 [點我開啟 ChatGPT 對話頁面](https://chatgpt.com)")
@@ -118,7 +100,7 @@ elif st.session_state.page == 4:
     st.button("下一頁 / Next", on_click=next_page)
     st.button("上一頁 / Back", on_click=prev_page)
 
-# 第 5 頁：輸入創意成果
+# 第 5 頁：整合創意成果
 elif st.session_state.page == 5:
     st.title("📝 整合創意成果")
     final_ideas = st.text_area("請輸入你與 ChatGPT 對話後，整理出的三個創意點子")
@@ -131,7 +113,7 @@ elif st.session_state.page == 5:
         final_row = {
             "時間戳記": datetime.now().isoformat(),
             "使用者編號": st.session_state.user_id,
-            "語言": language,
+            "語言": st.session_state.language,
             "創意發想結果": final_ideas
         }
         df = pd.concat([df, pd.DataFrame([final_row])], ignore_index=True)
@@ -180,7 +162,7 @@ elif st.session_state.page == 6:
         survey_result = {
             "時間戳記": datetime.now().isoformat(),
             "使用者編號": st.session_state.user_id,
-            "語言": language,
+            "語言": st.session_state.language,
         }
         for i, val in enumerate(survey_responses):
             survey_result[f"Q{i+1}"] = val
