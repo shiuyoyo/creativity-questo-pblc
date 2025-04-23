@@ -23,20 +23,30 @@ def next_page():
 def prev_page():
     st.session_state.page -= 1
 
-# 頁面 1：語言與挑戰說明
+# 頁面 1：語言選擇 + 挑戰說明
 if st.session_state.page == 1:
     st.title("🏁 活動挑戰說明")
-    st.session_state.language = st.selectbox("Choose your language / 選擇語言", ["English", "中文"], index=0, key="lang_select")
-    lang_code = 'E' if st.session_state.language == 'English' else 'C'
-    if lang_code == 'E':
-        st.markdown("You have joined a competition... Guests include: Business travelers... Old towels to be disposed of...")
-    else:
-        st.markdown("你要參加一個比賽，是在為一間位於都市商業區的飯店尋找最佳理念...")
+
+    if 'selected_lang' not in st.session_state:
+        st.session_state.selected_lang = "English"
+
+    st.session_state.selected_lang = st.selectbox(
+        "Choose your language / 選擇語言", ["English", "中文"],
+        index=["English", "中文"].index(st.session_state.selected_lang),
+        key="lang_select"
+    )
 
     if st.button("下一頁 / Next", key="next_page1"):
+        st.session_state.language = st.session_state.selected_lang
         next_page()
 
-lang_code = 'E' if st.session_state.language == 'English' else 'C'
+    if 'language' in st.session_state:
+        lang_code = 'E' if st.session_state.language == 'English' else 'C'
+        if lang_code == 'E':
+            st.markdown("You have joined a competition... Guests include: Business travelers... Old towels to be disposed of...")
+        else:
+            st.markdown("你要參加一個比賽，是在為一間位於都市商業區的飯店尋找最佳理念...")
+
 
 # 頁面 2：創意構想輸入
 if st.session_state.page == 2:
