@@ -116,14 +116,49 @@ elif st.session_state.page == 3:
 
     st.button("下一頁 / Next", on_click=next_page, key="next_page3")
     st.button("上一頁 / Back", on_click=prev_page, key="back_page3")
-# 頁面 4：ChatGPT 外部互動
+# 頁面 4：內建 ChatGPT 對話頁面（改為內建對話模式）
 elif st.session_state.page == 4:
-    st.title("🌍 與 ChatGPT 對話（外部）")
-    st.markdown("👉 [點我開啟 ChatGPT 對話頁面](https://chatgpt.com)")
-    st.markdown("請與 ChatGPT 對話，獲得靈感後點選下一步")
+    st.title("🌟 與 ChatGPT 對話（內建）")
+
+    if "chatgpt_history" not in st.session_state:
+        st.session_state.chatgpt_history = []
+
+    # 顯示先前的對話
+    for msg, reply in st.session_state.chatgpt_history:
+        with st.chat_message("user"):
+            st.markdown(msg)
+        with st.chat_message("assistant"):
+            st.markdown(reply)
+
+    # 輸入框與送出
+    gpt_input = st.text_input("🗨️ 請向 ChatGPT 提出你的問題（輸入 'end' 結束）", key="chatgpt_input")
+    if st.button("送出問題 / Ask ChatGPT", key="chatgpt_submit"):
+        if gpt_input.strip().lower() != "end":
+            # 呼叫 GPT 模型（使用小Q同一組）
+            response = st.session_state.llm.Chat(gpt_input, lang_code, st.session_state.activity)
+            chat_reply = response['OUTPUT']['GUIDE'] or response['OUTPUT']['EVAL'] or "（無回覆）"
+            st.session_state.chatgpt_history.append((gpt_input, chat_reply))
+
+            # 儲存到 Excel
+            try:
+                df = pd.read_excel("Database.xlsx")
+            except:
+                df = pd.DataFrame()
+
+            new_row = {
+                "時間戳記": datetime.now().isoformat(),
+                "使用者編號": st.session_state.user_id,
+                "語言": st.session_state.language,
+                "來源": "ChatGPT頁面",
+                "原始問題": gpt_input,
+                "AI 回應": chat_reply
+            }
+            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+            df.to_excel("Database.xlsx", index=False)
+
+            st.experimental_rerun()
 
     st.button("下一頁 / Next", on_click=next_page, key="next_page4")
-    st.button("上一頁 / Back", on_click=prev_page, key="back_page4")
 
 # 頁面 5：創意成果輸入
 elif st.session_state.page == 5:
