@@ -5,6 +5,7 @@ from chat import LLM
 
 st.set_page_config(page_title="Questo - Creativity Assistant", layout="centered")
 
+# 初始化
 if 'page' not in st.session_state:
     st.session_state.page = 1
 if 'user_id' not in st.session_state:
@@ -22,12 +23,11 @@ def next_page():
 def prev_page():
     st.session_state.page -= 1
 
-# 第 1 頁：語言選擇 + 挑戰介紹
+# 頁面 1：語言與挑戰說明
 if st.session_state.page == 1:
     st.title("🏁 活動挑戰說明")
     st.session_state.language = st.selectbox("Choose your language / 選擇語言", ["English", "中文"], index=0, key="lang_select")
     lang_code = 'E' if st.session_state.language == 'English' else 'C'
-
     if lang_code == 'E':
         st.markdown("You have joined a competition... Guests include: Business travelers... Old towels to be disposed of...")
     else:
@@ -38,7 +38,7 @@ if st.session_state.page == 1:
 
 lang_code = 'E' if st.session_state.language == 'English' else 'C'
 
-# 第 2 頁：輸入構想
+# 頁面 2：創意構想輸入
 if st.session_state.page == 2:
     st.title("💡 初步構想發想")
     activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas", key="activity_input")
@@ -48,11 +48,12 @@ if st.session_state.page == 2:
     if st.button("下一頁 / Next", key="next_page2"):
         next_page()
     st.button("上一頁 / Back", on_click=prev_page, key="back_page2")
-# 第 3 頁：與小Q AI 對話
+
+# 頁面 3：小Q聊天氣泡
 elif st.session_state.page == 3:
     st.title("🧠 與小Q AI 助教對話")
 
-    # Show chat history
+    # 顯示所有歷史對話
     for msg, response in st.session_state.chat_history:
         with st.chat_message("user"):
             st.markdown(msg)
@@ -63,14 +64,27 @@ elif st.session_state.page == 3:
                 st.markdown(response['OUTPUT']['EVAL'])
                 st.markdown("**📝 改寫建議：** " + response['OUTPUT']['NEWQ'])
 
-    # Input at the bottom
+    # 額外顯示剛送出的對話（非 rerun）
+    if "last_question" in st.session_state:
+        with st.chat_message("user"):
+            st.markdown(st.session_state.last_question)
+        with st.chat_message("assistant"):
+            r = st.session_state.last_response
+            if r['OUTPUT']['CLS'] == '1':
+                st.markdown(r['OUTPUT']['GUIDE'])
+            elif r['OUTPUT']['CLS'] == '2':
+                st.markdown(r['OUTPUT']['EVAL'])
+                st.markdown("**📝 改寫建議：** " + r['OUTPUT']['NEWQ'])
+
+    # 提問框在下方
     question = st.text_input("💬 請輸入你想問的問題（輸入 'end' 結束對話）", key="q3_input")
     if st.button("送出問題 / Submit", key="q3_submit"):
         if question.strip().lower() != "end":
             llm_response = st.session_state.llm.Chat(question, lang_code, st.session_state.activity)
             st.session_state.chat_history.append((question, llm_response))
+            st.session_state.last_question = question
+            st.session_state.last_response = llm_response
 
-            # Save to Excel
             try:
                 df = pd.read_excel("Database.xlsx")
             except:
@@ -90,11 +104,9 @@ elif st.session_state.page == 3:
             df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
             df.to_excel("Database.xlsx", index=False)
 
-            st.experimental_rerun()
-
     st.button("下一頁 / Next", on_click=next_page, key="next_page3")
     st.button("上一頁 / Back", on_click=prev_page, key="back_page3")
-# 第 4 頁：ChatGPT 外部互動
+# 頁面 4：ChatGPT 外部互動
 elif st.session_state.page == 4:
     st.title("🌍 與 ChatGPT 對話（外部）")
     st.markdown("👉 [點我開啟 ChatGPT 對話頁面](https://chatgpt.com)")
@@ -102,3 +114,75 @@ elif st.session_state.page == 4:
 
     st.button("下一頁 / Next", on_click=next_page, key="next_page4")
     st.button("上一頁 / Back", on_click=prev_page, key="back_page4")
+
+# 頁面 5：創意成果輸入
+elif st.session_state.page == 5:
+    st.title("📝 整合創意成果")
+    final_ideas = st.text_area("請輸入你與 ChatGPT 對話後，整理出的三個創意點子", key="final_ideas_input")
+    if st.button("送出創意", key="submit_ideas5"):
+        try:
+            df = pd.read_excel("Database.xlsx")
+        except:
+            df = pd.DataFrame()
+
+        final_row = {
+            "時間戳記": datetime.now().isoformat(),
+            "使用者編號": st.session_state.user_id,
+            "語言": st.session_state.language,
+            "創意發想結果": final_ideas
+        }
+        df = pd.concat([df, pd.DataFrame([final_row])], ignore_index=True)
+        df.to_excel("Database.xlsx", index=False)
+        st.success("🎉 創意點子已送出並儲存！")
+
+    st.button("下一頁 / Next", on_click=next_page, key="next_page5")
+    st.button("上一頁 / Back", on_click=prev_page, key="back_page5")
+
+# 頁面 6：15題問卷 + 開放建議
+elif st.session_state.page == 6:
+    st.title("🎯 小Q體驗問卷調查")
+    st.markdown("請根據您在這次活動中的經驗，選擇最符合您感受的分數（1 = 非常不同意，5 = 非常同意）")
+
+    questions = [
+        "1. 小Q 提問助手的介面讓我感到容易使用",
+        "2. 整體互動流程清楚、順暢",
+        "3. 在與小Q的對話過程中，我感到被理解",
+        "4. 我知道下一步該做什麼，不感到迷惘",
+        "5. 小Q 的回饋對我來說容易理解",
+        "6. 小Q 幫助我產生了更多元的想法",
+        "7. 小Q 的引導讓我思考到原本沒想到的面向",
+        "8. 小Q 的建議對我提問的品質有明顯提升",
+        "9. 在與小Q互動後，我對創意挑戰更有信心",
+        "10. 小Q 幫助我更明確地聚焦於特定目標對象或情境",
+        "11. 我對這次與小Q的互動感到滿意",
+        "12. 如果有類似任務，我會願意再次使用小Q",
+        "13. 我會推薦小Q給其他同學或朋友使用",
+        "14. 小Q 在創意學習中是一個有幫助的工具",
+        "15. 整體而言，我的創意思考因為小Q而有所提升"
+    ]
+
+    survey_responses = []
+    for i, q in enumerate(questions):
+        response = st.radio(q, options=[1, 2, 3, 4, 5], key=f"survey_q{i+1}", horizontal=True)
+        survey_responses.append(response)
+
+    open_feedback = st.text_area("16. 你還有其他建議或回饋嗎？（非必填）", key="open_feedback")
+
+    if st.button("📩 送出問卷", key="submit_survey6"):
+        try:
+            df = pd.read_excel("Database.xlsx")
+        except:
+            df = pd.DataFrame()
+
+        survey_result = {
+            "時間戳記": datetime.now().isoformat(),
+            "使用者編號": st.session_state.user_id,
+            "語言": st.session_state.language,
+        }
+        for i, val in enumerate(survey_responses):
+            survey_result[f"Q{i+1}"] = val
+        survey_result["開放建議"] = open_feedback
+
+        df = pd.concat([df, pd.DataFrame([survey_result])], ignore_index=True)
+        df.to_excel("Database.xlsx", index=False)
+        st.success("✅ 感謝您完成問卷，資料已儲存！")
