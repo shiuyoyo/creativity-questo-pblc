@@ -5,6 +5,7 @@ from chat import LLM
 
 st.set_page_config(page_title="Questo - Creativity Assistant", layout="centered")
 
+# 初始化狀態
 if 'page' not in st.session_state:
     st.session_state.page = 1
 if 'user_id' not in st.session_state:
@@ -24,108 +25,109 @@ def next_page():
 def prev_page():
     st.session_state.page -= 1
 
-# 頁面 1：語言選擇
-if st.session_state.page == 1 and st.session_state.language is None:
+# 第 1 頁：語言選擇畫面
+if st.session_state.page == 1:
     st.title("🏁 活動挑戰說明")
-
+    if 'selected_lang' not in st.session_state:
+        st.session_state.selected_lang = "English"
     st.session_state.selected_lang = st.selectbox(
-        "Choose your language / 選擇語言", ["English", "中文"], key="lang_select"
+        "Choose your language / 選擇語言",
+        ["English", "中文"],
+        index=["English", "中文"].index(st.session_state.selected_lang),
+        key="lang_select"
     )
-
-    if st.button("下一頁 / Next", key="next_page1"):
+    if st.button("下一頁 / Next", key="next_lang"):
         st.session_state.language = st.session_state.selected_lang
         st.session_state.page = 2
+        st.rerun()
+        # 第 2 頁：創意構想
+if st.session_state.page == 2:
+    st.title("💡 初步構想發想")
+    activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas", key="activity_input")
+    if activity:
+        st.session_state.activity = activity
+    if st.button("下一頁 / Next", key="next_page2"):
+        next_page()
+    st.button("上一頁 / Back", on_click=prev_page, key="back_page2")
 
-# 只有當語言選完後才開始其他頁
-if st.session_state.language is not None:
-    lang_code = 'E' if st.session_state.language == 'English' else 'C'
+# 第 3 頁：小Q AI 助教聊天氣泡
+elif st.session_state.page == 3:
+    st.title("🧠 與小Q AI 助教對話")
+    for msg, response in st.session_state.chat_history:
+        with st.chat_message("user"):
+            st.markdown(msg)
+        with st.chat_message("assistant"):
+            if response['OUTPUT']['CLS'] == '1':
+                st.markdown(response['OUTPUT']['GUIDE'])
+            elif response['OUTPUT']['CLS'] == '2':
+                st.markdown(response['OUTPUT']['EVAL'])
+                st.markdown("**📝 改寫建議：** " + response['OUTPUT']['NEWQ'])
 
-    # 頁面 2：創意輸入
-    if st.session_state.page == 2:
-        st.title("💡 初步構想發想")
-        activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas", key="activity_input")
-        if activity:
-            st.session_state.activity = activity
+    question = st.text_input("💬 請輸入你想問的問題（輸入 'end' 結束對話）", key="q3_input")
+    if st.button("送出問題 / Submit", key="q3_submit"):
+        if question.strip().lower() != "end":
+            lang_code = 'E' if st.session_state.language == 'English' else 'C'
+            llm_response = st.session_state.llm.Chat(question, lang_code, st.session_state.activity)
+            st.session_state.chat_history.append((question, llm_response))
 
-        if st.button("下一頁 / Next", key="next_page2"):
-            next_page()
-        st.button("上一頁 / Back", on_click=prev_page, key="back_page2")
+            try:
+                df = pd.read_excel("Database.xlsx")
+            except:
+                df = pd.DataFrame()
 
-    # 頁面 3：與小Q對話
-    elif st.session_state.page == 3:
-        st.title("🧠 與小Q AI 助教對話")
-        for msg, response in st.session_state.chat_history:
-            with st.chat_message("user"):
-                st.markdown(msg)
-            with st.chat_message("assistant"):
-                if response['OUTPUT']['CLS'] == '1':
-                    st.markdown(response['OUTPUT']['GUIDE'])
-                elif response['OUTPUT']['CLS'] == '2':
-                    st.markdown(response['OUTPUT']['EVAL'])
-                    st.markdown("**📝 改寫建議：** " + response['OUTPUT']['NEWQ'])
+            new_row = {
+                "時間戳記": datetime.now().isoformat(),
+                "使用者編號": st.session_state.user_id,
+                "語言": st.session_state.language,
+                "原始問題": question,
+                "問題類型": llm_response['OUTPUT']['CLS'],
+                "AI 回饋": llm_response['OUTPUT']['GUIDE'] or llm_response['OUTPUT']['EVAL'],
+                "改寫建議": llm_response['OUTPUT']['NEWQ'],
+                "SCAMPER 類型": llm_response['MISC']['SCAMPER_ELEMENT'],
+                "成本估算": llm_response['MISC']['cost_input'] + llm_response['MISC']['cost_output']
+            }
+            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+            df.to_excel("Database.xlsx", index=False)
 
-        question = st.text_input("💬 請輸入你想問的問題（輸入 'end' 結束對話）", key="q3_input")
-        if st.button("送出問題 / Submit", key="q3_submit"):
-            if question.strip().lower() != "end":
-                llm_response = st.session_state.llm.Chat(question, lang_code, st.session_state.activity)
-                st.session_state.chat_history.append((question, llm_response))
-                try:
-                    df = pd.read_excel("Database.xlsx")
-                except:
-                    df = pd.DataFrame()
-                new_row = {
-                    "時間戳記": datetime.now().isoformat(),
-                    "使用者編號": st.session_state.user_id,
-                    "語言": st.session_state.language,
-                    "原始問題": question,
-                    "問題類型": llm_response['OUTPUT']['CLS'],
-                    "AI 回饋": llm_response['OUTPUT']['GUIDE'] or llm_response['OUTPUT']['EVAL'],
-                    "改寫建議": llm_response['OUTPUT']['NEWQ'],
-                    "SCAMPER 類型": llm_response['MISC']['SCAMPER_ELEMENT'],
-                    "成本估算": llm_response['MISC']['cost_input'] + llm_response['MISC']['cost_output']
-                }
-                df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-                df.to_excel("Database.xlsx", index=False)
+    st.button("下一頁 / Next", on_click=next_page, key="next_page3")
+    st.button("上一頁 / Back", on_click=prev_page, key="back_page3")
+# 第 4 頁：與 ChatGPT 對話（內建氣泡介面）
+elif st.session_state.page == 4:
+    st.title("🌟 與 ChatGPT 對話（內建）")
 
-        st.button("下一頁 / Next", on_click=next_page, key="next_page3")
-        st.button("上一頁 / Back", on_click=prev_page, key="back_page3")
+    for msg, reply in st.session_state.chatgpt_history:
+        with st.chat_message("user"):
+            st.markdown(msg)
+        with st.chat_message("assistant"):
+            st.markdown(reply)
 
-    # 頁面 4：內建 ChatGPT 對話頁
-    elif st.session_state.page == 4:
-        st.title("🌟 與 ChatGPT 對話（內建）")
-        for msg, reply in st.session_state.chatgpt_history:
-            with st.chat_message("user"):
-                st.markdown(msg)
-            with st.chat_message("assistant"):
-                st.markdown(reply)
+    gpt_input = st.text_input("🗨️ 請向 ChatGPT 提出你的問題（輸入 'end' 結束）", key="chatgpt_input")
+    if st.button("送出問題 / Ask ChatGPT", key="chatgpt_submit"):
+        if gpt_input.strip().lower() != "end":
+            lang_code = 'E' if st.session_state.language == 'English' else 'C'
+            response = st.session_state.llm.Chat(gpt_input, lang_code, st.session_state.activity)
+            chat_reply = response['OUTPUT']['GUIDE'] or response['OUTPUT']['EVAL'] or "（無回覆）"
+            st.session_state.chatgpt_history.append((gpt_input, chat_reply))
 
-        gpt_input = st.text_input("🗨️ 請向 ChatGPT 提出你的問題（輸入 'end' 結束）", key="chatgpt_input")
-        if st.button("送出問題 / Ask ChatGPT", key="chatgpt_submit"):
-            if gpt_input.strip().lower() != "end":
-                response = st.session_state.llm.Chat(gpt_input, lang_code, st.session_state.activity)
-                chat_reply = response['OUTPUT']['GUIDE'] or response['OUTPUT']['EVAL'] or "（無回覆）"
-                st.session_state.chatgpt_history.append((gpt_input, chat_reply))
+            try:
+                df = pd.read_excel("Database.xlsx")
+            except:
+                df = pd.DataFrame()
 
-                try:
-                    df = pd.read_excel("Database.xlsx")
-                except:
-                    df = pd.DataFrame()
+            new_row = {
+                "時間戳記": datetime.now().isoformat(),
+                "使用者編號": st.session_state.user_id,
+                "語言": st.session_state.language,
+                "來源": "ChatGPT頁面",
+                "原始問題": gpt_input,
+                "AI 回應": chat_reply
+            }
+            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+            df.to_excel("Database.xlsx", index=False)
 
-                new_row = {
-                    "時間戳記": datetime.now().isoformat(),
-                    "使用者編號": st.session_state.user_id,
-                    "語言": st.session_state.language,
-                    "來源": "ChatGPT頁面",
-                    "原始問題": gpt_input,
-                    "AI 回應": chat_reply
-                }
-                df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-                df.to_excel("Database.xlsx", index=False)
-
-        st.button("下一頁 / Next", on_click=next_page, key="next_page4")
-        st.button("上一頁 / Back", on_click=prev_page, key="back_page4")
-
-# 頁面 5：創意成果輸入
+    st.button("下一頁 / Next", on_click=next_page, key="next_page4")
+    st.button("上一頁 / Back", on_click=prev_page, key="back_page4")
+# 第 5 頁：整合創意成果
 elif st.session_state.page == 5:
     st.title("📝 整合創意成果")
     final_ideas = st.text_area("請輸入你與 ChatGPT 對話後，整理出的三個創意點子", key="final_ideas_input")
@@ -134,7 +136,6 @@ elif st.session_state.page == 5:
             df = pd.read_excel("Database.xlsx")
         except:
             df = pd.DataFrame()
-
         final_row = {
             "時間戳記": datetime.now().isoformat(),
             "使用者編號": st.session_state.user_id,
@@ -147,8 +148,7 @@ elif st.session_state.page == 5:
 
     st.button("下一頁 / Next", on_click=next_page, key="next_page5")
     st.button("上一頁 / Back", on_click=prev_page, key="back_page5")
-
-# 頁面 6：15題問卷 + 開放建議
+# 第 6 頁：體驗問卷
 elif st.session_state.page == 6:
     st.title("🎯 小Q體驗問卷調查")
     st.markdown("請根據您在這次活動中的經驗，選擇最符合您感受的分數（1 = 非常不同意，5 = 非常同意）")
