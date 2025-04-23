@@ -51,21 +51,26 @@ if st.session_state.page == 2:
 # 第 3 頁：與小Q AI 對話
 elif st.session_state.page == 3:
     st.title("🧠 與小Q AI 助教對話")
-    question = st.text_input("請輸入你想問小Q的問題（輸入 'end' 結束對話）", key="question_input")
-    if st.button("送出問題 / Submit", key="submit_q3"):
-        if question.lower() != "end":
+
+    # 顯示歷史對話紀錄
+    for msg, response in st.session_state.chat_history:
+        with st.chat_message("user"):
+            st.markdown(msg)
+        with st.chat_message("assistant"):
+            if response['OUTPUT']['CLS'] == '1':
+                st.markdown(response['OUTPUT']['GUIDE'])
+            elif response['OUTPUT']['CLS'] == '2':
+                st.markdown(response['OUTPUT']['EVAL'])
+                st.markdown("**📝 改寫建議：** " + response['OUTPUT']['NEWQ'])
+
+    # 下方輸入框
+    question = st.text_input("💬 請輸入你想問的問題（輸入 'end' 結束對話）", key="q3_input")
+    if st.button("送出問題 / Submit", key="q3_submit"):
+        if question.strip().lower() != "end":
             llm_response = st.session_state.llm.Chat(question, lang_code, st.session_state.activity)
             st.session_state.chat_history.append((question, llm_response))
 
-            with st.chat_message("user"):
-                st.write(question)
-            with st.chat_message("assistant"):
-                if llm_response['OUTPUT']['CLS'] == '1':
-                    st.write(llm_response['OUTPUT']['GUIDE'])
-                elif llm_response['OUTPUT']['CLS'] == '2':
-                    st.write(llm_response['OUTPUT']['EVAL'])
-                    st.markdown("**📝 改寫建議：** " + llm_response['OUTPUT']['NEWQ'])
-
+            # 儲存到 Excel
             try:
                 df = pd.read_excel("Database.xlsx")
             except:
@@ -85,8 +90,11 @@ elif st.session_state.page == 3:
             df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
             df.to_excel("Database.xlsx", index=False)
 
+            st.experimental_rerun()  # 重新載入頁面讓對話顯示出來
+
     st.button("下一頁 / Next", on_click=next_page, key="next_page3")
     st.button("上一頁 / Back", on_click=prev_page, key="back_page3")
+
 
 # 第 4 頁：ChatGPT 外部互動
 elif st.session_state.page == 4:
