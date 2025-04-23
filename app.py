@@ -52,7 +52,7 @@ if st.session_state.page == 2:
 elif st.session_state.page == 3:
     st.title("🧠 與小Q AI 助教對話")
 
-    # 顯示歷史對話紀錄
+    # Show chat history
     for msg, response in st.session_state.chat_history:
         with st.chat_message("user"):
             st.markdown(msg)
@@ -63,14 +63,14 @@ elif st.session_state.page == 3:
                 st.markdown(response['OUTPUT']['EVAL'])
                 st.markdown("**📝 改寫建議：** " + response['OUTPUT']['NEWQ'])
 
-    # 下方輸入框
+    # Input at the bottom
     question = st.text_input("💬 請輸入你想問的問題（輸入 'end' 結束對話）", key="q3_input")
     if st.button("送出問題 / Submit", key="q3_submit"):
         if question.strip().lower() != "end":
             llm_response = st.session_state.llm.Chat(question, lang_code, st.session_state.activity)
             st.session_state.chat_history.append((question, llm_response))
 
-            # 儲存到 Excel
+            # Save to Excel
             try:
                 df = pd.read_excel("Database.xlsx")
             except:
@@ -90,12 +90,10 @@ elif st.session_state.page == 3:
             df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
             df.to_excel("Database.xlsx", index=False)
 
-            st.experimental_rerun()  # 重新載入頁面讓對話顯示出來
+            st.experimental_rerun()
 
     st.button("下一頁 / Next", on_click=next_page, key="next_page3")
     st.button("上一頁 / Back", on_click=prev_page, key="back_page3")
-
-
 # 第 4 頁：ChatGPT 外部互動
 elif st.session_state.page == 4:
     st.title("🌍 與 ChatGPT 對話（外部）")
