@@ -19,9 +19,15 @@ if 'llm' not in st.session_state:
 if 'language' not in st.session_state:
     st.session_state.language = "English"
 
-language = st.selectbox("Choose your language / 選擇語言", ["English", "中文"], index=0)
-st.session_state.language = language
-lang_code = "E" if language == "English" else "C"
+st.selectbox(
+    "Choose your language / 選擇語言",
+    ["English", "中文"],
+    index=0 if st.session_state.language == "English" else 1,
+    key="language",
+    disabled=(st.session_state.page > 1)
+)
+
+lang_code = "E" if st.session_state.language == "English" else "C"
 
 def next_page():
     st.session_state.page += 1
@@ -79,7 +85,7 @@ elif st.session_state.page == 3:
             new_row = {
                 "時間戳記": datetime.now().isoformat(),
                 "使用者編號": st.session_state.user_id,
-                "語言": language,
+                "語言": st.session_state.language,
                 "原始問題": question,
                 "問題類型": llm_response['OUTPUT']['CLS'],
                 "AI 回饋": llm_response['OUTPUT']['GUIDE'] or llm_response['OUTPUT']['EVAL'],
