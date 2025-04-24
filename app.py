@@ -1,136 +1,106 @@
 import streamlit as st
 import pandas as pd
-import os
 from datetime import datetime
-from langchain_openai import ChatOpenAI
+from chat import LLM
+from openai import OpenAI
+import openai
 
 st.set_page_config(page_title="Questo - Creativity Assistant", layout="centered")
 
-# 初始化狀態
+# 初始化 session
 if 'page' not in st.session_state:
     st.session_state.page = 1
 if 'user_id' not in st.session_state:
     st.session_state.user_id = f"User_{datetime.now().strftime('%H%M%S')}"
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
-if 'chatgpt_history' not in st.session_state:
-    st.session_state.chatgpt_history = []
-if 'language' not in st.session_state:
-    st.session_state.language = None
-
-# 明確指定 OpenAI API Key
-api_key = os.environ.get("OPENAI_API_KEY")
+if 'gpt_chat' not in st.session_state:
+    st.session_state.gpt_chat = []
 if 'llm' not in st.session_state:
-    st.session_state.llm = ChatOpenAI(
-        model="gpt-4o",
-        temperature=0.7,
-        openai_api_key=api_key
-    )
+    st.session_state.llm = LLM()
+if 'language' not in st.session_state:
+    st.session_state.language = "English"
 
-# 頁面切換限制
-MAX_PAGE = 6
+language = st.selectbox("Choose your language / 選擇語言", ["English", "中文"], index=0)
+st.session_state.language = language
+lang_code = "E" if language == "English" else "C"
+
 def next_page():
-    if st.session_state.page < MAX_PAGE:
-        st.session_state.page += 1
+    st.session_state.page += 1
 def prev_page():
-    if st.session_state.page > 1:
-        st.session_state.page -= 1
+    st.session_state.page -= 1
 
-# 語言選擇 → 自動跳轉
+# 第 1 頁
 if st.session_state.page == 1:
     st.title("🏁 活動挑戰說明")
-    if st.session_state.language is None:
-        st.session_state.language = st.selectbox("Choose your language / 選擇語言", ["English", "中文"])
-        st.session_state.page = 2
-        st.rerun()
-    else:
-        st.markdown(f"🌐 **Current Language**: `{st.session_state.language}`")
-        st.stop()
+    st.markdown("請閱讀活動說明後進入下一頁")
+    st.markdown("你要參加一個比賽，為飯店的舊毛巾找到創意用途...")
+    st.button("下一頁 / Next", on_click=next_page)
 
-# 顯示語言於每頁頂端
-if st.session_state.language:
-    st.markdown(f"🌐 **Current Language**: `{st.session_state.language}`")
-
-lang_code = 'E' if st.session_state.language == 'English' else 'C'
-
-# 第 2 頁：初步構想發想
-if st.session_state.page == 2:
+# 第 2 頁
+elif st.session_state.page == 2:
     st.title("💡 初步構想發想")
-    activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas", key="activity_input")
-    if activity:
-        st.session_state.activity = activity
-    if st.button("下一頁 / Next", key="next_page2"):
-        next_page()
+    activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas", value=st.session_state.get("activity", ""))
+    if st.button("下一頁 / Next"):
+        if activity.strip() == "":
+            st.warning("⚠️ 請先輸入構想內容！")
+        else:
+            st.session_state.activity = activity
+            st.session_state.llm.setup_language_and_activity(lang_code, activity)
+            next_page()
+    st.button("上一頁 / Back", on_click=prev_page)
 
-# 第 3 頁：與小Q AI 助教對話
+# 第 3 頁：與小Q對話
 elif st.session_state.page == 3:
     st.title("🧠 與小Q AI 助教對話")
-    for msg, response in st.session_state.chat_history:
-        with st.chat_message("user"):
-            st.markdown(msg)
-        with st.chat_message("assistant"):
-            st.markdown(response)
+    question = st.text_input("請輸入你想問小Q的問題（輸入 'end' 結束對話）")
+    if st.button("送出問題 / Submit"):
+        if question.lower() != "end":
+            llm_response = st.session_state.llm.Chat(question, lang_code, st.session_state.activity)
+            st.session_state.chat_history.append((question, llm_response))
+            with st.chat_message("user"):
+                st.write(question)
+            with st.chat_message("assistant"):
+                response = llm_response['OUTPUT']['GUIDE'] or llm_response['OUTPUT']['EVAL']
+                if response.strip() == "":
+                    st.warning("⚠️ 小Q暫時無法給出建議，請嘗試重新表述問題。")
+                else:
+                    st.write(response)
 
-    with st.form("q_form"):
-        question = st.text_input("💬 請輸入你想問的問題", key="q_input")
-        submitted = st.form_submit_button("送出問題 / Submit")
-    if submitted and question.strip():
-        result = st.session_state.llm.invoke(f"請針對此問題給出建議或改善方向：{question}")
-        st.session_state.chat_history.append((question, result.content))
+    st.button("下一頁 / Next", on_click=next_page)
+    st.button("上一頁 / Back", on_click=prev_page)
 
-        try:
-            df = pd.read_excel("Database.xlsx")
-        except:
-            df = pd.DataFrame()
-
-        row = {
-            "時間戳記": datetime.now().isoformat(),
-            "使用者編號": st.session_state.user_id,
-            "語言": st.session_state.language,
-            "來源": "小Q",
-            "問題": question,
-            "AI 回覆": result.content
-        }
-        df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
-        df.to_excel("Database.xlsx", index=False)
-
-    st.button("下一頁 / Next", on_click=next_page, key="next_page3")
-    st.button("上一頁 / Back", on_click=prev_page, key="back_page3")
-
-# 第 4 頁：ChatGPT 對話（內建）
+# 第 4 頁：真實 ChatGPT 對話
 elif st.session_state.page == 4:
-    st.title("🌍 與 ChatGPT 對話（內建）")
-    for msg, reply in st.session_state.chatgpt_history:
-        with st.chat_message("user"):
-            st.markdown(msg)
-        with st.chat_message("assistant"):
-            st.markdown(reply)
+    st.title("💬 與 ChatGPT 真實對話")
+    st.markdown("請輸入與 ChatGPT 對話的問題")
 
-    with st.form("chatgpt_form"):
-        gpt_input = st.text_input("請向 ChatGPT 提問：", key="chatgpt_input")
-        gpt_submit = st.form_submit_button("送出問題 / Ask ChatGPT")
+    msg = st.text_input("輸入你的問題給 ChatGPT", key="gpt_input")
+    if st.button("送出給 ChatGPT"):
+        if "OPENAI_API_KEY" not in st.secrets:
+            st.error("⚠️ 請在 Streamlit Secrets 設定 OPENAI_API_KEY")
+        else:
+            openai.api_key = st.secrets["OPENAI_API_KEY"]
+            try:
+                response = openai.ChatCompletion.create(
+                    model="gpt-4o",
+                    messages=[
+                        {"role": "system", "content": "你是一個創意助教。"},
+                        {"role": "user", "content": msg}
+                    ]
+                )
+                reply = response["choices"][0]["message"]["content"]
+                st.session_state.gpt_chat.append(("user", msg))
+                st.session_state.gpt_chat.append(("gpt", reply))
+            except Exception as e:
+                st.error(f"OpenAI 回應錯誤：{e}")
 
-    if gpt_submit and gpt_input.strip():
-        reply = st.session_state.llm.invoke(f"針對挑戰活動：{st.session_state.activity}，此問題「{gpt_input}」的建議與看法是？")
-        st.session_state.chatgpt_history.append((gpt_input, reply.content))
+    for role, txt in st.session_state.gpt_chat:
+        with st.chat_message("user" if role == "user" else "assistant"):
+            st.write(txt)
 
-        try:
-            df = pd.read_excel("Database.xlsx")
-        except:
-            df = pd.DataFrame()
-
-        df = pd.concat([df, pd.DataFrame([{
-            "時間戳記": datetime.now().isoformat(),
-            "使用者編號": st.session_state.user_id,
-            "語言": st.session_state.language,
-            "來源": "ChatGPT",
-            "問題": gpt_input,
-            "AI 回覆": reply.content
-        }])], ignore_index=True)
-        df.to_excel("Database.xlsx", index=False)
-
-    st.button("下一頁 / Next", on_click=next_page, key="next_page4")
-    st.button("上一頁 / Back", on_click=prev_page, key="back_page4")
+    st.button("下一頁 / Next", on_click=next_page)
+    st.button("上一頁 / Back", on_click=prev_page)
 
 # 第 5 頁：整合創意成果
 elif st.session_state.page == 5:
@@ -153,8 +123,8 @@ elif st.session_state.page == 5:
         df.to_excel("Database.xlsx", index=False)
         st.success("🎉 創意點子已送出並儲存！")
 
-    st.button("下一頁 / Next", on_click=next_page, key="next_page5")
-    st.button("上一頁 / Back", on_click=prev_page, key="back_page5")
+    st.button("下一頁 / Next", on_click=next_page, key="next_page")
+    st.button("上一頁 / Back", on_click=prev_page, key="back_page")
 
 # 第 6 頁：體驗問卷
 elif st.session_state.page == 6:
