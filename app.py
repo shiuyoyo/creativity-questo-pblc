@@ -18,16 +18,16 @@ if 'chatgpt_history' not in st.session_state:
 if 'language' not in st.session_state:
     st.session_state.language = None
 
-# 明確指定 OpenAI API Key
+# 明確指定 OpenAI API Key，並改用 gpt-3.5-turbo
 api_key = os.environ.get("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")
 if 'llm' not in st.session_state:
     st.session_state.llm = ChatOpenAI(
-        model="gpt-4o",
+        model="gpt-3.5-turbo",  # 更穩定版本
         temperature=0.7,
         openai_api_key=api_key
     )
 
-# 頁面切換限制
+# 最大頁碼控制
 MAX_PAGE = 6
 def next_page():
     if st.session_state.page < MAX_PAGE:
@@ -36,7 +36,7 @@ def prev_page():
     if st.session_state.page > 1:
         st.session_state.page -= 1
 
-# 語言選擇 → 自動跳轉
+# 語言選擇 + 自動跳頁
 if st.session_state.page == 1:
     st.title("🏁 活動挑戰說明")
     if st.session_state.language is None:
@@ -47,13 +47,13 @@ if st.session_state.page == 1:
         st.markdown(f"🌐 **Current Language**: `{st.session_state.language}`")
         st.stop()
 
-# 顯示語言於每頁頂端
+# 顯示語言於每頁頂部
 if st.session_state.language:
     st.markdown(f"🌐 **Current Language**: `{st.session_state.language}`")
 
 lang_code = 'E' if st.session_state.language == 'English' else 'C'
 
-# 第 2 頁：初步構想發想
+# 第 2 頁：初步構想
 if st.session_state.page == 2:
     st.title("💡 初步構想發想")
     activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas", key="activity_input")
@@ -62,7 +62,7 @@ if st.session_state.page == 2:
     if st.button("下一頁 / Next", key="next_page2"):
         next_page()
 
-# 第 3 頁：與小Q AI 助教對話
+# 第 3 頁：小Q AI 助教
 elif st.session_state.page == 3:
     st.title("🧠 與小Q AI 助教對話")
     for msg, response in st.session_state.chat_history:
@@ -97,7 +97,7 @@ elif st.session_state.page == 3:
     st.button("下一頁 / Next", on_click=next_page, key="next_page3")
     st.button("上一頁 / Back", on_click=prev_page, key="back_page3")
 
-# 第 4 頁：ChatGPT 對話（內建）
+# 第 4 頁：ChatGPT 內建對話
 elif st.session_state.page == 4:
     st.title("🌍 與 ChatGPT 對話（內建）")
     for msg, reply in st.session_state.chatgpt_history:
