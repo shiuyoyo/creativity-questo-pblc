@@ -70,20 +70,14 @@ class LLM:
         self.activity, self.language = None, 'E'
 
     def setup_language_and_activity(self, language, activity):
-        # question
-        if os.path.isfile(os.path.join('./activities', activity)):
-            with open(os.path.join('./activities', activity), 'r') as file:
-                file_content = file.read()
-            self.activity_content = file_content
-        elif activity == '':
-            with open('./activities/default.txt', 'r') as file:
-                file_content = file.read()
-            self.activity_content = file_content
-        else:
-            self.activity_content = activity
-        
-        self.language = language.upper()
-        self.activity = activity
+    if activity.strip() == '':
+        self.activity_content = "No activity provided."
+    else:
+        self.activity_content = activity
+
+    self.language = language.upper()
+    self.activity = activity
+
 
     def get_element(self):
         element = random.choice([*'SCAMPER'])
