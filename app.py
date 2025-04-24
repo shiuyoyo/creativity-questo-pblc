@@ -19,10 +19,12 @@ if 'language' not in st.session_state:
     st.session_state.language = None
 
 # 明確指定 OpenAI API Key，並改用 gpt-3.5-turbo
+
 api_key = "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"
-if 'llm' not in st.session_state:
+if st.session_state.language and 'llm' not in st.session_state:
+    api_key = os.environ.get("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")
     st.session_state.llm = ChatOpenAI(
-        model="gpt-3.5-turbo",  # 更穩定版本
+        model="gpt-3.5-turbo",
         temperature=0.7,
         openai_api_key=api_key
     )
