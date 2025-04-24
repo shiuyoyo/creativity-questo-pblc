@@ -2,12 +2,10 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from chat import LLM
-from openai import OpenAI
 import openai
 
 st.set_page_config(page_title="Questo - Creativity Assistant", layout="centered")
 
-# 初始化 session
 if 'page' not in st.session_state:
     st.session_state.page = 1
 if 'user_id' not in st.session_state:
@@ -30,14 +28,11 @@ def next_page():
 def prev_page():
     st.session_state.page -= 1
 
-# 第 1 頁
 if st.session_state.page == 1:
     st.title("🏁 活動挑戰說明")
-    st.markdown("請閱讀活動說明後進入下一頁")
     st.markdown("你要參加一個比賽，為飯店的舊毛巾找到創意用途...")
     st.button("下一頁 / Next", on_click=next_page)
 
-# 第 2 頁
 elif st.session_state.page == 2:
     st.title("💡 初步構想發想")
     activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas", value=st.session_state.get("activity", ""))
@@ -50,46 +45,58 @@ elif st.session_state.page == 2:
             next_page()
     st.button("上一頁 / Back", on_click=prev_page)
 
-# 第 3 頁：與小Q對話
 elif st.session_state.page == 3:
     st.title("🧠 與小Q AI 助教對話")
+    for q, r in st.session_state.chat_history:
+        with st.chat_message("user"):
+            st.write(q)
+        with st.chat_message("assistant"):
+            reply = r['OUTPUT']['GUIDE'] or r['OUTPUT']['EVAL']
+            st.write(reply if reply.strip() else "⚠️ 小Q暫時無法提供建議，請重新表述問題。")
+
     question = st.text_input("請輸入你想問小Q的問題（輸入 'end' 結束對話）")
     if st.button("送出問題 / Submit"):
         if question.lower() != "end":
             llm_response = st.session_state.llm.Chat(question, lang_code, st.session_state.activity)
             st.session_state.chat_history.append((question, llm_response))
-            with st.chat_message("user"):
-                st.write(question)
-            with st.chat_message("assistant"):
-                response = llm_response['OUTPUT']['GUIDE'] or llm_response['OUTPUT']['EVAL']
-                if response.strip() == "":
-                    st.warning("⚠️ 小Q暫時無法給出建議，請嘗試重新表述問題。")
-                else:
-                    st.write(response)
+            try:
+                df = pd.read_excel("Database.xlsx")
+            except:
+                df = pd.DataFrame()
+            new_row = {
+                "時間戳記": datetime.now().isoformat(),
+                "使用者編號": st.session_state.user_id,
+                "語言": language,
+                "原始問題": question,
+                "問題類型": llm_response['OUTPUT']['CLS'],
+                "AI 回饋": llm_response['OUTPUT']['GUIDE'] or llm_response['OUTPUT']['EVAL'],
+                "改寫建議": llm_response['OUTPUT']['NEWQ'],
+                "SCAMPER 類型": llm_response['MISC']['SCAMPER_ELEMENT'],
+                "成本估算": llm_response['MISC']['cost_input'] + llm_response['MISC']['cost_output']
+            }
+            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+            df.to_excel("Database.xlsx", index=False)
 
     st.button("下一頁 / Next", on_click=next_page)
     st.button("上一頁 / Back", on_click=prev_page)
 
-# 第 4 頁：真實 ChatGPT 對話
 elif st.session_state.page == 4:
     st.title("💬 與 ChatGPT 真實對話")
-    st.markdown("請輸入與 ChatGPT 對話的問題")
-
     msg = st.text_input("輸入你的問題給 ChatGPT", key="gpt_input")
     if st.button("送出給 ChatGPT"):
         if "OPENAI_API_KEY" not in st.secrets:
             st.error("⚠️ 請在 Streamlit Secrets 設定 OPENAI_API_KEY")
         else:
-            openai.api_key = st.secrets["OPENAI_API_KEY"]
+            client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
             try:
-                response = openai.ChatCompletion.create(
+                response = client.chat.completions.create(
                     model="gpt-4o",
                     messages=[
-                        {"role": "system", "content": "你是一個創意助教。"},
+                        {"role": "system", "content": "你是一位擅長引導創意思考的 AI 助教"},
                         {"role": "user", "content": msg}
                     ]
                 )
-                reply = response["choices"][0]["message"]["content"]
+                reply = response.choices[0].message.content
                 st.session_state.gpt_chat.append(("user", msg))
                 st.session_state.gpt_chat.append(("gpt", reply))
             except Exception as e:
