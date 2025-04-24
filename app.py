@@ -5,7 +5,7 @@ from chat import LLM
 
 st.set_page_config(page_title="Questo - Creativity Assistant", layout="centered")
 
-# 初始化
+# 初始化 session 狀態
 if 'page' not in st.session_state:
     st.session_state.page = 1
 if 'user_id' not in st.session_state:
@@ -22,44 +22,17 @@ def next_page():
     st.session_state.page += 1
 def prev_page():
     st.session_state.page -= 1
-
-# Page 1: Challenge Description
+# 第 1 頁：挑戰說明
 if st.session_state.page == 1:
     st.title("🏁 活動挑戰說明")
     if lang_code == "E":
-        st.markdown("""You have joined a competition that aims at sourcing the best idea for a hotel located in a business district of an urban city to find good uses of the waste it produces. The hotel is situated next to a hospital, a convention center, and a major tourist attraction.
-
-Guests include: Business travelers, Convention Attendees, Friends and Families of Patients, Tourists
-
-You are required to propose three best ideas for the competition based on old towels to be disposed of.
-
-To win the competition, your ideas should:
-- Help transform the waste at the hotel into something that delights the guests
-- Be creative
-
-Important Notes:
-You do not have to worry about the costs and resources required.
-You do not have to delight all types of guests.
-""")
+        st.markdown('''You have joined a competition that aims at sourcing the best idea...''')
     else:
-        st.markdown("""你要參加一個比賽，是在為一間位於都市商業區的飯店尋找最佳理念，找到飯店產生的廢棄物的良好用途。該飯店位於醫院、會議中心和主要旅遊景點旁邊。
-
-其客群主要為：商務旅客、會議參加者、病人的親友、遊客
-
-你需要利用被處理的舊毛巾為比賽提出三個最佳理念。
-
-為了贏得比賽，你的理念應該：
-- 幫助將酒店的廢棄物轉化為令客人愉悅的東西
-- 富有創意
-
-注意事項：
-在此階段，你不必擔心實施的成本和資源。
-你不必取悅所有類型的客人。
-""")
+        st.markdown('''你要參加一個比賽，是在為一間位於都市商業區...''')
     if st.button("下一頁 / Next"):
         next_page()
 
-# Page 2: Initial Idea Submission
+# 第 2 頁：初步構想
 elif st.session_state.page == 2:
     st.title("💡 初步構想發想")
     activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas")
@@ -69,8 +42,7 @@ elif st.session_state.page == 2:
         st.session_state.llm.setup_language_and_activity(lang_code, activity)
         next_page()
     st.button("上一頁 / Back", on_click=prev_page)
-
-# Page 3: Ask AI (Chat with 小Q)
+# 第 3 頁：與小Q對話
 elif st.session_state.page == 3:
     st.title("🧠 與小Q AI 助教對話")
     question = st.text_input("請輸入你想問小Q的問題（輸入 'end' 結束對話）")
@@ -87,11 +59,11 @@ elif st.session_state.page == 3:
                     st.write(llm_response['OUTPUT']['EVAL'])
                     st.markdown("**📝 改寫建議：** " + llm_response['OUTPUT']['NEWQ'])
 
+            # 儲存
             try:
                 df = pd.read_excel("Database.xlsx")
             except:
                 df = pd.DataFrame()
-
             new_row = {
                 "時間戳記": datetime.now().isoformat(),
                 "使用者編號": st.session_state.user_id,
@@ -105,10 +77,10 @@ elif st.session_state.page == 3:
             }
             df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
             df.to_excel("Database.xlsx", index=False)
+
     st.button("下一頁 / Next", on_click=next_page)
     st.button("上一頁 / Back", on_click=prev_page)
-
-# Page 4: ChatGPT External Inspiration
+# 第 4 頁：ChatGPT 啟發
 elif st.session_state.page == 4:
     st.title("🌍 與 ChatGPT 對話（外部）")
     st.markdown("👉 [點我開啟 ChatGPT 對話頁面](https://chatgpt.com)")
@@ -116,7 +88,7 @@ elif st.session_state.page == 4:
     st.button("下一頁 / Next", on_click=next_page)
     st.button("上一頁 / Back", on_click=prev_page)
 
-# Page 5: Final Creative Input
+# 第 5 頁：創意回填
 elif st.session_state.page == 5:
     st.title("📝 整合創意成果")
     final_ideas = st.text_area("請輸入你與 ChatGPT 對話後，整理出的三個創意點子")
@@ -137,10 +109,11 @@ elif st.session_state.page == 5:
     st.button("下一頁 / Next", on_click=next_page)
     st.button("上一頁 / Back", on_click=prev_page)
 
-# Page 6: Final Survey
+# 第 6 頁：滿意度問卷
 elif st.session_state.page == 6:
     st.title("🎯 小Q體驗問卷調查")
     st.markdown("請根據您在這次活動中的經驗，選擇最符合您感受的分數（1 = 非常不同意，5 = 非常同意）")
+
     questions = [
         "1. 小Q 提問助手的介面讓我感到容易使用",
         "2. 整體互動流程清楚、順暢",
@@ -158,11 +131,14 @@ elif st.session_state.page == 6:
         "14. 小Q 在創意學習中是一個有幫助的工具",
         "15. 整體而言，我的創意思考因為小Q而有所提升"
     ]
+
     survey_responses = []
     for i, q in enumerate(questions):
         response = st.radio(q, options=[1, 2, 3, 4, 5], key=f"survey_q{i+1}", horizontal=True)
         survey_responses.append(response)
+
     open_feedback = st.text_area("16. 你還有其他建議或回饋嗎？（非必填）")
+
     if st.button("📩 送出問卷"):
         try:
             df = pd.read_excel("Database.xlsx")
