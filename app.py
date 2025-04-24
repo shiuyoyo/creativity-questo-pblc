@@ -1,12 +1,10 @@
 import streamlit as st
 import pandas as pd
-import os
 from datetime import datetime
 from langchain_openai import ChatOpenAI
 
 st.set_page_config(page_title="Questo - Creativity Assistant", layout="centered")
 
-# 初始化狀態
 if 'page' not in st.session_state:
     st.session_state.page = 1
 if 'user_id' not in st.session_state:
@@ -17,39 +15,27 @@ if 'chatgpt_history' not in st.session_state:
     st.session_state.chatgpt_history = []
 if 'language' not in st.session_state:
     st.session_state.language = None
+if 'llm' not in st.session_state:
+    st.session_state.llm = ChatOpenAI(model="gpt-4o", temperature=0.7)
 
-# 明確指定 OpenAI API Key，並改用 gpt-3.5-turbo
-
-api_key = "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"
-if st.session_state.language and 'llm' not in st.session_state:
-    api_key = os.environ.get("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")
-    st.session_state.llm = ChatOpenAI(
-        model="gpt-3.5-turbo",
-        temperature=0.7,
-        openai_api_key=api_key
-    )
-
-# 最大頁碼控制
-MAX_PAGE = 6
 def next_page():
-    if st.session_state.page < MAX_PAGE:
-        st.session_state.page += 1
-def prev_page():
-    if st.session_state.page > 1:
-        st.session_state.page -= 1
+    st.session_state.page += 1
 
-# 語言選擇 + 自動跳頁
+def prev_page():
+    st.session_state.page -= 1
+
+# 自動語言選擇 + 跳轉
 if st.session_state.page == 1:
     st.title("🏁 活動挑戰說明")
-    if st.session_state.language is None:
-        st.session_state.language = st.selectbox("Choose your language / 選擇語言", ["English", "中文"])
-        st.session_state.page = 2
-        st.rerun()
-    else:
-        st.markdown(f"🌐 **Current Language**: `{st.session_state.language}`")
-        st.stop()
+    st.session_state.language = st.selectbox("Choose your language / 選擇語言", ["English", "中文"], index=0, key="lang_auto_select")
+    st.session_state.page = 2
+    st.rerun()
 
-# 顯示語言於每頁頂部
+# 防止語言選完但仍停留在第一頁造成重疊
+if st.session_state.page == 1:
+    st.stop()
+
+# 顯示語言在每頁頂部
 if st.session_state.language:
     st.markdown(f"🌐 **Current Language**: `{st.session_state.language}`")
 
@@ -64,7 +50,7 @@ if st.session_state.page == 2:
     if st.button("下一頁 / Next", key="next_page2"):
         next_page()
 
-# 第 3 頁：小Q AI 助教
+# 第 3 頁：與小Q聊天（內建氣泡）
 elif st.session_state.page == 3:
     st.title("🧠 與小Q AI 助教對話")
     for msg, response in st.session_state.chat_history:
@@ -99,7 +85,7 @@ elif st.session_state.page == 3:
     st.button("下一頁 / Next", on_click=next_page, key="next_page3")
     st.button("上一頁 / Back", on_click=prev_page, key="back_page3")
 
-# 第 4 頁：ChatGPT 內建對話
+# 第 4 頁：ChatGPT 對話內建
 elif st.session_state.page == 4:
     st.title("🌍 與 ChatGPT 對話（內建）")
     for msg, reply in st.session_state.chatgpt_history:
@@ -133,67 +119,3 @@ elif st.session_state.page == 4:
 
     st.button("下一頁 / Next", on_click=next_page, key="next_page4")
     st.button("上一頁 / Back", on_click=prev_page, key="back_page4")
-
-# 第 5 頁：整合創意成果
-elif st.session_state.page == 5:
-    st.title("📝 整合創意成果")
-    final_ideas = st.text_area("請輸入你與 ChatGPT 對話後，整理出的三個創意點子", key="final_ideas_input")
-    if st.button("送出創意", key="submit_ideas5"):
-        try:
-            df = pd.read_excel("Database.xlsx")
-        except:
-            df = pd.DataFrame()
-
-        row = {
-            "時間戳記": datetime.now().isoformat(),
-            "使用者編號": st.session_state.user_id,
-            "語言": st.session_state.language,
-            "來源": "最終創意發想",
-            "創意發想結果": final_ideas
-        }
-        df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
-        df.to_excel("Database.xlsx", index=False)
-        st.success("🎉 創意點子已送出並儲存！")
-
-    st.button("下一頁 / Next", on_click=next_page, key="next_page5")
-    st.button("上一頁 / Back", on_click=prev_page, key="back_page5")
-
-# 第 6 頁：體驗問卷
-elif st.session_state.page == 6:
-    st.title("📋 小Q使用體驗問卷")
-    st.markdown("請根據您在這次活動中的經驗，選擇最符合您感受的分數（1 = 非常不同意，5 = 非常同意）")
-
-    questions = [
-        "1. 小Q提問助手的介面容易使用",
-        "2. 整體互動流程清楚、順暢",
-        "3. 小Q的回饋對我有幫助",
-        "4. 我會推薦小Q給其他人",
-        "5. 與小Q的互動提升了我的創意思考"
-    ]
-
-    responses = []
-    for i, q in enumerate(questions):
-        resp = st.radio(q, [1, 2, 3, 4, 5], horizontal=True, key=f"survey_q{i}")
-        responses.append(resp)
-
-    comment = st.text_area("💬 其他建議或感想（非必填）", key="survey_comment")
-
-    if st.button("📩 送出問卷", key="submit_survey"):
-        try:
-            df = pd.read_excel("Database.xlsx")
-        except:
-            df = pd.DataFrame()
-
-        result = {
-            "時間戳記": datetime.now().isoformat(),
-            "使用者編號": st.session_state.user_id,
-            "語言": st.session_state.language,
-            "來源": "體驗問卷"
-        }
-        for i, score in enumerate(responses):
-            result[f"問卷Q{i+1}"] = score
-        result["開放回饋"] = comment
-
-        df = pd.concat([df, pd.DataFrame([result])], ignore_index=True)
-        df.to_excel("Database.xlsx", index=False)
-        st.success("✅ 感謝您填寫問卷！")
