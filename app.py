@@ -1,11 +1,12 @@
 import streamlit as st
 import pandas as pd
+import os
 from datetime import datetime
 from langchain_openai import ChatOpenAI
 
 st.set_page_config(page_title="Questo - Creativity Assistant", layout="centered")
 
-# 初始化
+# 初始化狀態
 if 'page' not in st.session_state:
     st.session_state.page = 1
 if 'user_id' not in st.session_state:
@@ -16,38 +17,43 @@ if 'chatgpt_history' not in st.session_state:
     st.session_state.chatgpt_history = []
 if 'language' not in st.session_state:
     st.session_state.language = None
+
+# 明確指定 OpenAI API Key
+api_key = os.environ.get("OPENAI_API_KEY")
 if 'llm' not in st.session_state:
-    st.session_state.llm = ChatOpenAI(model="gpt-4o", temperature=0.7)
+    st.session_state.llm = ChatOpenAI(
+        model="gpt-4o",
+        temperature=0.7,
+        openai_api_key=api_key
+    )
 
-# 分頁上限（可調整頁數）
+# 頁面切換限制
 MAX_PAGE = 6
-
 def next_page():
     if st.session_state.page < MAX_PAGE:
         st.session_state.page += 1
-
 def prev_page():
     if st.session_state.page > 1:
         st.session_state.page -= 1
 
-# 第 1 頁：語言選擇與自動跳轉
+# 語言選擇 → 自動跳轉
 if st.session_state.page == 1:
     st.title("🏁 活動挑戰說明")
-    st.session_state.language = st.selectbox("Choose your language / 選擇語言", ["English", "中文"], index=0, key="lang_auto_select")
-    st.session_state.page = 2
-    st.rerun()
+    if st.session_state.language is None:
+        st.session_state.language = st.selectbox("Choose your language / 選擇語言", ["English", "中文"])
+        st.session_state.page = 2
+        st.rerun()
+    else:
+        st.markdown(f"🌐 **Current Language**: `{st.session_state.language}`")
+        st.stop()
 
-# 避免語言選擇後 page 1 重疊
-if st.session_state.page == 1:
-    st.stop()
-
-# 每頁頂部顯示語言
+# 顯示語言於每頁頂端
 if st.session_state.language:
     st.markdown(f"🌐 **Current Language**: `{st.session_state.language}`")
 
 lang_code = 'E' if st.session_state.language == 'English' else 'C'
 
-# 第 2 頁
+# 第 2 頁：初步構想發想
 if st.session_state.page == 2:
     st.title("💡 初步構想發想")
     activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas", key="activity_input")
@@ -56,7 +62,7 @@ if st.session_state.page == 2:
     if st.button("下一頁 / Next", key="next_page2"):
         next_page()
 
-# 第 3 頁：小Q 聊天
+# 第 3 頁：與小Q AI 助教對話
 elif st.session_state.page == 3:
     st.title("🧠 與小Q AI 助教對話")
     for msg, response in st.session_state.chat_history:
@@ -126,8 +132,7 @@ elif st.session_state.page == 4:
     st.button("下一頁 / Next", on_click=next_page, key="next_page4")
     st.button("上一頁 / Back", on_click=prev_page, key="back_page4")
 
-
-# 第 5 頁：創意發想成果整合
+# 第 5 頁：整合創意成果
 elif st.session_state.page == 5:
     st.title("📝 整合創意成果")
     final_ideas = st.text_area("請輸入你與 ChatGPT 對話後，整理出的三個創意點子", key="final_ideas_input")
