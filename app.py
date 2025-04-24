@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from chat import LLM
-import openai
+from openai import OpenAI
 
 st.set_page_config(page_title="Questo - Creativity Assistant", layout="centered")
 
@@ -52,7 +52,7 @@ elif st.session_state.page == 3:
             st.write(q)
         with st.chat_message("assistant"):
             reply = r['OUTPUT']['GUIDE'] or r['OUTPUT']['EVAL']
-            st.write(reply if reply.strip() else "⚠️ 小Q暫時無法提供建議，請重新表述問題。")
+            st.write(reply if reply.strip() else "⚠️ 小Q暫時無提供建議")
 
     question = st.text_input("請輸入你想問小Q的問題（輸入 'end' 結束對話）")
     if st.button("送出問題 / Submit"):
@@ -87,7 +87,7 @@ elif st.session_state.page == 4:
         if "OPENAI_API_KEY" not in st.secrets:
             st.error("⚠️ 請在 Streamlit Secrets 設定 OPENAI_API_KEY")
         else:
-            client = openai.OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+            client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
             try:
                 response = client.chat.completions.create(
                     model="gpt-4o",
@@ -108,7 +108,6 @@ elif st.session_state.page == 4:
 
     st.button("下一頁 / Next", on_click=next_page)
     st.button("上一頁 / Back", on_click=prev_page)
-
 # 第 5 頁：整合創意成果
 elif st.session_state.page == 5:
     st.title("📝 整合創意成果")
