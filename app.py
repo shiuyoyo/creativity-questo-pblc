@@ -33,16 +33,30 @@ if st.session_state.page == 1:
     st.markdown("你要參加一個比賽，為飯店的舊毛巾找到創意用途...")
     st.button("下一頁 / Next", on_click=next_page)
 
+# 第 2 頁
 elif st.session_state.page == 2:
     st.title("💡 初步構想發想")
+
+    if 'activity_warning' not in st.session_state:
+        st.session_state.activity_warning = False  # 控制顯示與否
+
     activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas", value=st.session_state.get("activity", ""))
+
+    # 一旦輸入內容變多，自動清除警告
+    if activity.strip():
+        st.session_state.activity_warning = False
+
     if st.button("下一頁 / Next"):
         if activity.strip() == "":
-            st.warning("⚠️ 請先輸入構想內容！")
+            st.session_state.activity_warning = True
         else:
             st.session_state.activity = activity
             st.session_state.llm.setup_language_and_activity(lang_code, activity)
             next_page()
+
+    if st.session_state.activity_warning:
+        st.warning("⚠️ 請先輸入構想內容！")
+
     st.button("上一頁 / Back", on_click=prev_page)
 
 elif st.session_state.page == 3:
