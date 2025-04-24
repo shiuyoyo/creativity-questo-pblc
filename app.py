@@ -35,12 +35,16 @@ if st.session_state.page == 1:
 # 第 2 頁：初步構想
 elif st.session_state.page == 2:
     st.title("💡 初步構想發想")
-    activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas")
-    if activity:
-        st.session_state.activity = activity
+    activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas", value=st.session_state.get("activity", ""))
+    
     if st.button("下一頁 / Next"):
-        st.session_state.llm.setup_language_and_activity(lang_code, activity)
-        next_page()
+        if activity.strip() == "":
+            st.warning("⚠️ 請先輸入至少一項構想內容！")
+        else:
+            st.session_state.activity = activity
+            st.session_state.llm.setup_language_and_activity(lang_code, activity)
+            next_page()
+
     st.button("上一頁 / Back", on_click=prev_page)
 # 第 3 頁：與小Q對話
 elif st.session_state.page == 3:
