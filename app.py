@@ -90,7 +90,7 @@ elif st.session_state.page == 4:
             client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
             try:
                 response = client.chat.completions.create(
-                    model="gpt-3.5-turbo",
+                    model="gpt-4o",
                     messages=[
                         {"role": "system", "content": "你是一位擅長引導創意思考的 AI 助教"},
                         {"role": "user", "content": msg}
