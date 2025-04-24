@@ -33,16 +33,12 @@ if st.session_state.page == 1:
     st.markdown("你要參加一個比賽，為飯店的舊毛巾找到創意用途...")
     st.button("下一頁 / Next", on_click=next_page)
 
-# 第 2 頁
 elif st.session_state.page == 2:
     st.title("💡 初步構想發想")
-
     if 'activity_warning' not in st.session_state:
-        st.session_state.activity_warning = False  # 控制顯示與否
+        st.session_state.activity_warning = False
 
     activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas", value=st.session_state.get("activity", ""))
-
-    # 一旦輸入內容變多，自動清除警告
     if activity.strip():
         st.session_state.activity_warning = False
 
@@ -61,6 +57,7 @@ elif st.session_state.page == 2:
 
 elif st.session_state.page == 3:
     st.title("🧠 與小Q AI 助教對話")
+
     for q, r in st.session_state.chat_history:
         with st.chat_message("user"):
             st.write(q)
@@ -68,9 +65,11 @@ elif st.session_state.page == 3:
             reply = r['OUTPUT']['GUIDE'] or r['OUTPUT']['EVAL']
             st.write(reply if reply.strip() else "⚠️ 小Q暫時無提供建議")
 
-    question = st.text_input("請輸入你想問小Q的問題（輸入 'end' 結束對話）")
-    if st.button("送出問題 / Submit"):
-        if question.lower() != "end":
+    with st.form("question_form"):
+        question = st.text_input("請輸入你想問小Q的問題（輸入 'end' 結束對話）", key="input_q")
+        submitted = st.form_submit_button("送出問題 / Submit")
+
+        if submitted and question.strip() and question.lower() != "end":
             llm_response = st.session_state.llm.Chat(question, lang_code, st.session_state.activity)
             st.session_state.chat_history.append((question, llm_response))
             try:
