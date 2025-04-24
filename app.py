@@ -5,7 +5,7 @@ from chat import LLM
 
 st.set_page_config(page_title="Questo - Creativity Assistant", layout="centered")
 
-# 初始化 session 狀態
+# 初始化狀態
 if 'page' not in st.session_state:
     st.session_state.page = 1
 if 'user_id' not in st.session_state:
@@ -14,39 +14,43 @@ if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 if 'llm' not in st.session_state:
     st.session_state.llm = LLM()
+if 'language' not in st.session_state:
+    st.session_state.language = "English"
 
+# 語言設定
 language = st.selectbox("Choose your language / 選擇語言", ["English", "中文"], index=0)
+st.session_state.language = language
 lang_code = "E" if language == "English" else "C"
 
 def next_page():
     st.session_state.page += 1
 def prev_page():
     st.session_state.page -= 1
-# 第 1 頁：挑戰說明
+
+# 頁面 1：活動挑戰說明
 if st.session_state.page == 1:
     st.title("🏁 活動挑戰說明")
+    st.markdown("### 請閱讀活動說明後進入下一頁")
     if lang_code == "E":
-        st.markdown('''You have joined a competition that aims at sourcing the best idea...''')
+        st.markdown("You have joined a competition... [內容略]")
     else:
-        st.markdown('''你要參加一個比賽，是在為一間位於都市商業區...''')
-    if st.button("下一頁 / Next"):
-        next_page()
+        st.markdown("你要參加一個比賽... [內容略]")
+    st.button("下一頁 / Next", on_click=next_page)
 
-# 第 2 頁：初步構想
+# 頁面 2：輸入構想
 elif st.session_state.page == 2:
     st.title("💡 初步構想發想")
     activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas", value=st.session_state.get("activity", ""))
-    
     if st.button("下一頁 / Next"):
         if activity.strip() == "":
-            st.warning("⚠️ 請先輸入至少一項構想內容！")
+            st.warning("⚠️ 請先輸入構想內容！")
         else:
             st.session_state.activity = activity
             st.session_state.llm.setup_language_and_activity(lang_code, activity)
             next_page()
-
     st.button("上一頁 / Back", on_click=prev_page)
-# 第 3 頁：與小Q對話
+
+# 頁面 3：與小Q對話
 elif st.session_state.page == 3:
     st.title("🧠 與小Q AI 助教對話")
     question = st.text_input("請輸入你想問小Q的問題（輸入 'end' 結束對話）")
@@ -57,38 +61,28 @@ elif st.session_state.page == 3:
             with st.chat_message("user"):
                 st.write(question)
             with st.chat_message("assistant"):
-                if llm_response['OUTPUT']['CLS'] == '1':
-                    st.write(llm_response['OUTPUT']['GUIDE'])
-                elif llm_response['OUTPUT']['CLS'] == '2':
-                    st.write(llm_response['OUTPUT']['EVAL'])
-                    st.markdown("**📝 改寫建議：** " + llm_response['OUTPUT']['NEWQ'])
-
-            # 儲存
-            try:
-                df = pd.read_excel("Database.xlsx")
-            except:
-                df = pd.DataFrame()
-            new_row = {
-                "時間戳記": datetime.now().isoformat(),
-                "使用者編號": st.session_state.user_id,
-                "語言": language,
-                "原始問題": question,
-                "問題類型": llm_response['OUTPUT']['CLS'],
-                "AI 回饋": llm_response['OUTPUT']['GUIDE'] or llm_response['OUTPUT']['EVAL'],
-                "改寫建議": llm_response['OUTPUT']['NEWQ'],
-                "SCAMPER 類型": llm_response['MISC']['SCAMPER_ELEMENT'],
-                "成本估算": llm_response['MISC']['cost_input'] + llm_response['MISC']['cost_output']
-            }
-            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-            df.to_excel("Database.xlsx", index=False)
+                st.write(llm_response['OUTPUT']['GUIDE'] or llm_response['OUTPUT']['EVAL'])
 
     st.button("下一頁 / Next", on_click=next_page)
     st.button("上一頁 / Back", on_click=prev_page)
-# 第 4 頁：ChatGPT 啟發
+
+# 頁面 4：模擬 ChatGPT 對話
 elif st.session_state.page == 4:
-    st.title("🌍 與 ChatGPT 對話（外部）")
-    st.markdown("👉 [點我開啟 ChatGPT 對話頁面](https://chatgpt.com)")
-    st.markdown("請與 ChatGPT 對話，獲得靈感後點選下一步")
+    st.title("💬 與 ChatGPT 模擬對話")
+    st.markdown("這是另一個 AI 模擬對話（非小Q）可自由練習提問")
+    if 'gpt_chat' not in st.session_state:
+        st.session_state.gpt_chat = []
+
+    msg = st.text_input("輸入你的問題給 GPT", key="gpt_input")
+    if st.button("送出給 GPT"):
+        response = f"這是 GPT 模擬回應：「{msg}」的想法是..."  # 模擬回覆
+        st.session_state.gpt_chat.append(("user", msg))
+        st.session_state.gpt_chat.append(("gpt", response))
+
+    for role, msg in st.session_state.gpt_chat:
+        with st.chat_message("user" if role == "user" else "assistant"):
+            st.write(msg)
+
     st.button("下一頁 / Next", on_click=next_page)
     st.button("上一頁 / Back", on_click=prev_page)
 
