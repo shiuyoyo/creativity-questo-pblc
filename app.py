@@ -79,7 +79,7 @@ elif st.session_state.page == 3:
         if submitted and question.strip() and question.lower() != "end":
             llm_response = st.session_state.llm.Chat(question, lang_code, st.session_state.activity)
             st.session_state.chat_history.append((question, llm_response))
-        st.rerun()  # ← 加入這行確保立即更新畫面
+            st.rerun()  # ← 加入這行確保立即更新畫面
             try:
                 df = pd.read_excel("Database.xlsx")
             except:
