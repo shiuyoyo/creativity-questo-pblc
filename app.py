@@ -15,6 +15,31 @@ titles = {
     6: {"E": "🎯 Feedback Questionnaire", "C": "🎯 小Q體驗問卷調查"},
 }
 
+questions_text = {
+    "instruction": {
+        "E": "Based on your experience with this activity, choose the score that best represents your feelings. (1 = Strongly Disagree, 5 = Strongly Agree)",
+        "C": "請根據您在這次活動中的經驗，選擇最符合您感受的分數（1 = 非常不同意，5 = 非常同意）"
+    },
+    "questions": {
+        "E": [
+            "I found Little Q easy to use.",
+            "The interaction flow was smooth and clear.",
+            "Little Q's feedback was helpful.",
+            "I would recommend Little Q to others.",
+            "The interaction helped me think more creatively.",
+            "Other comments or suggestions (optional)"
+        ],
+        "C": [
+            "小Q提問助手的介面容易使用",
+            "整體互動流程清楚、順暢",
+            "小Q的回饋對我有幫助",
+            "我會推薦小Q給其他人",
+            "與小Q的互動提升了我的創意思考",
+            "其他建議或意見（非必填）"
+        ]
+    }
+}
+
 if 'page' not in st.session_state:
     st.session_state.page = 1
 if 'user_id' not in st.session_state:
@@ -164,15 +189,13 @@ elif st.session_state.page == 5:
 # 第 6 頁：體驗問卷
 elif st.session_state.page == 6:
     st.title(titles[st.session_state.page][lang_code])
-    st.markdown("請根據您在這次活動中的經驗，選擇最符合您感受的分數（1 = 非常不同意，5 = 非常同意）")
+    st.markdown(questions_text["instruction"][lang_code])
 
-    questions = [
-        "1. 小Q提問助手的介面容易使用",
-        "2. 整體互動流程清楚、順暢",
-        "3. 小Q的回饋對我有幫助",
-        "4. 我會推薦小Q給其他人",
-        "5. 與小Q的互動提升了我的創意思考"
-    ]
+    questions = questions_text["questions"][lang_code]
+    for i, q in enumerate(questions[:-1]):
+        st.radio(f"{q}", [1, 2, 3, 4, 5], key=f"q{i+1}", horizontal=True)
+
+    st.text_area(questions[-1], key="q6")
 
     responses = []
     for i, q in enumerate(questions):
