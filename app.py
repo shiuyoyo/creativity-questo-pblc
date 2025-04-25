@@ -4,6 +4,7 @@ from datetime import datetime
 from chat import LLM
 from openai import OpenAI
 from challenge_page import show_challenge_page
+from google_sheet_sync import write_to_google_sheet
 
 st.set_page_config(page_title="Questo - Creativity Assistant", layout="centered")
 # 🔁 接收網址中的 page=? 參數
@@ -260,6 +261,7 @@ elif st.session_state.page == 6:
 
         df = pd.concat([df, pd.DataFrame([final_row])], ignore_index=True)
         df.to_excel("Database.xlsx", index=False)
+        write_to_google_sheet(final_row)
         st.success("✅ 感謝您填寫問卷並完成本次任務！")
 
 # 第 7 頁：教師報表頁
