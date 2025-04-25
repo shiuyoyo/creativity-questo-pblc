@@ -6,6 +6,14 @@ from openai import OpenAI
 from challenge_page import show_challenge_page
 
 st.set_page_config(page_title="Questo - Creativity Assistant", layout="centered")
+titles = {
+    1: {"E": "🏁 Event Challenge Description", "C": "🏁 活動挑戰說明"},
+    2: {"E": "💡 Initial Idea Generation", "C": "💡 初步構想發想"},
+    3: {"E": "🧠 Ask AI Assistant – Little Q", "C": "🧠 與小Q AI 助教對話"},
+    4: {"E": "💬 Chat with GPT", "C": "💬 與 ChatGPT 真實對話"},
+    5: {"E": "📝 Submit Final Creative Ideas", "C": "📝 整合創意成果"},
+    6: {"E": "🎯 Feedback Questionnaire", "C": "🎯 小Q體驗問卷調查"},
+}
 
 if 'page' not in st.session_state:
     st.session_state.page = 1
@@ -41,7 +49,7 @@ if st.session_state.page == 1:
     st.button("下一頁 / Next", on_click=next_page)
 
 elif st.session_state.page == 2:
-    st.title("💡 初步構想發想")
+    st.title(titles[st.session_state.page][lang_code])
     if 'activity_warning' not in st.session_state:
         st.session_state.activity_warning = False
 
@@ -63,7 +71,7 @@ elif st.session_state.page == 2:
     st.button("上一頁 / Back", on_click=prev_page)
 
 elif st.session_state.page == 3:
-    st.title("🧠 與小Q AI 助教對話")
+    st.title(titles[st.session_state.page][lang_code])
 
     for q, r in st.session_state.chat_history:
         with st.chat_message("user"):
@@ -102,7 +110,7 @@ elif st.session_state.page == 3:
     st.button("上一頁 / Back", on_click=prev_page)
 
 elif st.session_state.page == 4:
-    st.title("💬 與 ChatGPT 真實對話")
+    st.title(titles[st.session_state.page][lang_code])
     msg = st.text_input("輸入你的問題給 ChatGPT", key="gpt_input")
     if st.button("送出給 ChatGPT"):
         if "OPENAI_API_KEY" not in st.secrets:
@@ -131,7 +139,7 @@ elif st.session_state.page == 4:
     st.button("上一頁 / Back", on_click=prev_page)
 # 第 5 頁：整合創意成果
 elif st.session_state.page == 5:
-    st.title("📝 整合創意成果")
+    st.title(titles[st.session_state.page][lang_code])
     final_ideas = st.text_area("請輸入你與 ChatGPT 對話後，整理出的三個創意點子", key="final_ideas_input")
     if st.button("送出創意", key="submit_ideas5"):
         try:
@@ -155,7 +163,7 @@ elif st.session_state.page == 5:
 
 # 第 6 頁：體驗問卷
 elif st.session_state.page == 6:
-    st.title("📋 小Q使用體驗問卷")
+    st.title(titles[st.session_state.page][lang_code])
     st.markdown("請根據您在這次活動中的經驗，選擇最符合您感受的分數（1 = 非常不同意，5 = 非常同意）")
 
     questions = [
