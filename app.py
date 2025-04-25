@@ -196,9 +196,38 @@ elif st.session_state.page == 5:
     st.button("下一頁 / Next", on_click=next_page, key="next_page")
     st.button("上一頁 / Back", on_click=prev_page, key="back_page")
 
-# 第 6 頁：體驗問卷
+# 第 6 頁：體驗問卷 + 資料整合寫入
 elif st.session_state.page == 6:
-    st.title(titles[st.session_state.page][lang_code])
+    questions_text = {
+        "title": {
+            "E": "🎯 Feedback Questionnaire",
+            "C": "🎯 小Q體驗問卷調查"
+        },
+        "instruction": {
+            "E": "Based on your experience with this activity, choose the score that best represents your feelings. (1 = Strongly Disagree, 5 = Strongly Agree)",
+            "C": "請根據您在這次活動中的經驗，選擇最符合您感受的分數（1 = 非常不同意，5 = 非常同意）"
+        },
+        "questions": {
+            "E": [
+                "I found Little Q easy to use.",
+                "The interaction flow was smooth and clear.",
+                "Little Q's feedback was helpful.",
+                "I would recommend Little Q to others.",
+                "The interaction helped me think more creatively.",
+                "Other comments or suggestions (optional)"
+            ],
+            "C": [
+                "小Q提問助手的介面容易使用",
+                "整體互動流程清楚、順暢",
+                "小Q的回饋對我有幫助",
+                "我會推薦小Q給其他人",
+                "與小Q的互動提升了我的創意思考",
+                "其他建議或意見（非必填）"
+            ]
+        }
+    }
+
+    st.title(questions_text["title"][lang_code])
     st.markdown(questions_text["instruction"][lang_code])
     questions = questions_text["questions"][lang_code]
 
@@ -209,25 +238,38 @@ elif st.session_state.page == 6:
 
     comment = st.text_area(questions[-1], key="survey_comment")
 
-    if st.button("📩 送出問卷", key="submit_survey"):
+    if st.button("📩 送出問卷", key="submit_survey_final"):
         try:
             df = pd.read_excel("Database.xlsx")
         except:
             df = pd.DataFrame()
 
-        result = {
+        final_row = {
             "時間戳記": datetime.now().isoformat(),
             "使用者編號": st.session_state.user_id,
             "語言": st.session_state.language,
-            "來源": "體驗問卷"
+            "初步構想": st.session_state.get("activity", ""),
+            "最終構想": st.session_state.get("final_idea", "")
         }
-        for i, score in enumerate(responses):
-            result[f"問卷Q{i+1}"] = score
-        result["開放回饋"] = comment
 
-        df = pd.concat([df, pd.DataFrame([result])], ignore_index=True)
+        # 小Q 對話
+        for i, (q, r) in enumerate(st.session_state.get("chat_history", [])):
+            final_row[f"小Q 問題{i+1}"] = q
+            final_row[f"小Q 回覆{i+1}"] = r['OUTPUT']['GUIDE'] or r['OUTPUT']['EVAL']
+
+        # GPT 對話
+        for i, (q, r) in enumerate(st.session_state.get("gpt_chat", [])):
+            final_row[f"GPT 問題{i+1}"] = q
+            final_row[f"GPT 回覆{i+1}"] = r
+
+        # 問卷結果
+        for i, score in enumerate(responses):
+            final_row[f"問卷Q{i+1}"] = score
+        final_row["開放回饋"] = comment
+
+        df = pd.concat([df, pd.DataFrame([final_row])], ignore_index=True)
         df.to_excel("Database.xlsx", index=False)
-        st.success("✅ 感謝您填寫問卷！")
+        st.success("✅ 感謝您填寫問卷並完成本次任務！")
 
 # 第 7 頁：教師報表頁
 elif st.session_state.page == 7:
