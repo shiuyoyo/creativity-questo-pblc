@@ -244,32 +244,41 @@ elif st.session_state.page == 7:
 
     try:
         df = pd.read_excel("Database.xlsx")
-        st.dataframe(df)
     except:
         st.error("⚠️ 無法讀取資料，請確認是否有正確的 Database.xlsx")
         st.stop()
 
-    from fpdf import FPDF
-    from datetime import datetime
+    if df.empty:
+        st.warning("目前尚無任何互動紀錄。請確認至少有一位學生提交過內容。")
+    else:
+        st.dataframe(df)
 
-    if st.button("📄 下載整合報表（PDF）", key="dl_pdf"):
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("Arial", size=12)
-        pdf.cell(200, 10, txt="Creativity Activity Summary Report", ln=True, align="C")
-        pdf.ln(10)
+        # ✅ 提供 Excel 匯出
+        st.download_button("📥 匯出 Excel", data=open("Database.xlsx", "rb").read(), file_name="Database.xlsx")
 
-        for idx, row in df.iterrows():
-            pdf.set_font("Arial", "B", 11)
-            pdf.cell(200, 8, f"User ID: {row.get('使用者編號', 'N/A')} | Time: {row.get('時間戳記', '')}", ln=True)
-            pdf.set_font("Arial", "", 10)
-            for col in df.columns:
-                if col not in ["使用者編號", "時間戳記"]:
-                    value = str(row.get(col, "")).replace("\n", "\n")
-                    pdf.multi_cell(0, 6, f"{col}: {value}")
-            pdf.ln(5)
+        # ✅ 匯出 PDF
+        from io import BytesIO
+        from fpdf import FPDF
+        from datetime import datetime
 
-        filename = f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
-        pdf.output(f"/mnt/data/{filename}")
-        st.success(f"✅ PDF 已建立：{filename}")
-        st.download_button("📥 點我下載 PDF", data=open(f"/mnt/data/{filename}", "rb").read(), file_name=filename)
+        if st.button("📄 下載整合報表（PDF）", key="dl_pdf"):
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("Arial", size=12)
+            pdf.cell(200, 10, txt="Creativity Activity Summary Report", ln=True, align="C")
+            pdf.ln(10)
+
+            for idx, row in df.iterrows():
+                pdf.set_font("Arial", "B", 11)
+                pdf.cell(200, 8, f"User ID: {row.get('使用者編號', 'N/A')} | Time: {row.get('時間戳記', '')}", ln=True)
+                pdf.set_font("Arial", "", 10)
+                for col in df.columns:
+                    if col not in ["使用者編號", "時間戳記"]:
+                        value = str(row.get(col, "")).replace("\n", "\n")
+                        pdf.multi_cell(0, 6, f"{col}: {value}")
+                pdf.ln(5)
+
+            buffer = BytesIO()
+            pdf.output(buffer)
+            pdf_bytes = buffer.getvalue()
+            st.download_button("📥 點我下載 PDF", data=pdf_bytes, file_name=f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")
