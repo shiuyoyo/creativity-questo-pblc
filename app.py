@@ -189,20 +189,15 @@ elif st.session_state.page == 5:
 # 第 6 頁：體驗問卷
 elif st.session_state.page == 6:
     st.title(titles[st.session_state.page][lang_code])
-    st.markdown(questions_text["instruction"][lang_code])
-
+     st.markdown(questions_text["instruction"][lang_code])
     questions = questions_text["questions"][lang_code]
-    for i, q in enumerate(questions[:-1]):
-        st.radio(f"{q}", [1, 2, 3, 4, 5], key=f"q{i+1}", horizontal=True)
-
-    st.text_area(questions[-1], key="q6")
 
     responses = []
-    for i, q in enumerate(questions):
-        resp = st.radio(q, [1, 2, 3, 4, 5], horizontal=True, key=f"survey_q{i}")
+    for i, q in enumerate(questions[:-1]):
+        resp = st.radio(q, [1, 2, 3, 4, 5], horizontal=True, key=f"survey_q{i+1}")
         responses.append(resp)
 
-    comment = st.text_area("💬 其他建議或感想（非必填）", key="survey_comment")
+    comment = st.text_area(questions[-1], key="survey_comment")
 
     if st.button("📩 送出問卷", key="submit_survey"):
         try:
