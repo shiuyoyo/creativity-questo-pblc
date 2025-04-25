@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "creativity-records-app",
+  "private_key_id": "43299a8269f4408b444406a4e45325943ae4b521",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDAepkXzuSO0fA7\nXKXBNwjtpaebscVtIwOEPiV6qQ7WD7CgeYt/gqPqvBtilvOyH8gApzNsb2gvUWRp\nHkF6n162Jv+cnAVSYiw6c820xCuWsG6M+P1UboPUk6k6PnpUp5t+8h0dwZZllqZj\n+TdvKE06tH0rZDaeOHePEJWLlmYvyySCfhKwvBNBE7LxHNscy8C9fqFKpGb2/ChX\nEIqRGWdMdQil/nY2YY1wqtQT79XVEbvtVRVyzLCPH1YnN6idpFKLwWXe4BeqyNxC\n/+StT48X+s7Hw338STVZBAzExffVT0huXthmh+xf8KzGLS+65YS5TSH3jK75j233\ntM9dP817AgMBAAECggEAGwpeLZkURPg7bquCYdWQfIp0NIxR9xYfLVnpvAS6H9qO\nbs0EiwJYcubAViZs0A5k86qJr+cq1NLzb00f19FB5gcui9rjaIKAQin4sTeKBB5/\nOXDVbiIkhR3FfXg/iVsOnlP3QTHsJhN3Br6BSi14RBINL6ZhgfLe4QtsZvLXIkmB\nvlkahFsaszm1JxEJqJi0R0MsUT+NHhR0aQZakaxSTrCNVJJFOStmVuXAKO5QBCr7\n8IyYx4auqUqssIbRzpQcn2c+9B9ZJW2JIWNV+st1EacijOGKcnerXJGNh0jGM8+h\nAAhvA211yJh+EV5t18uaTRnqdpl+rp0lX3THNpJwGQKBgQD+t/GLlSvbUOb27kXK\nhq1XRtrEavkepagoQj/1ipkiwYUTe2BJl2hvrdiNkT3EWlHW8y0YhmJxoU9SBdbY\nqCB1h7m0bImmBJrMenizl7C+IBYPrI4omrcc4Xbo1mReI8lLPNpVonQ7YgQjwCZo\nZPGZezWO5viQSiJFDo2xVGzz1wKBgQDBcn62ZB3wTbL+cX+ZHmiSOfUJfSjsPO5j\nMUsoVc3CuJ/vPZeI3ZKOuWScduSlnF2g+rKH452m5G7WosvExTheC0pxX7Mxl8IN\nQVPahimfTj//I/3+GeoE/zbGifgfazy6cXT3cHROwWmqsvy1FugZYRCNS3h5U4kw\nAxcxvQl+/QKBgQC6xLlx9cEgoOOZsACwjavQUP3cA+wCkskIK/ul2SiMGYWwUUi6\n7TAAo2Ij+5lkvi1ABTLNxsusMfFtXSa52h1i0FBUgTk06C9xO2QBm3pXDkPe3lGm\naDtYC+IavAkAFhFk/4vAOswrNqV+aUhAR7P3LCaLT8R2WEVkiVVP722sJQKBgGvn\n/xCkhiK+ZMMT8pYp5TD0DWBupX4petxv6bmlKzKcI/Kiy713w0HD3oB8vYw3ze53\nCVFNwWoP8Fff1YR8crXa3HqjZGScf40/TJQP1HXdg0tB+3NbZzPEXPygh3yXJ/fk\nQ9emreokb1ndn6MwFOXbRA1c9OXQmCzk/HItPXfNAoGBAINT7gteoGp+zBnv1+HE\nTeY5jrFNtD5MCHDRf4C/1YbT7cQ8g66hOIALV0wUKaLtseL2bk5giqenxH9tqsXK\nqnM/al/5uLmNzXNx5gUxQDJTsmfv0ifNr38BAAGkNRnIQSTBiaeOiOUE8UoUUfTk\ndCE/1ccd0CgUgqta7UV0ob25\n-----END PRIVATE KEY-----\n",
+  "client_email": "streamlit-sync-bot@creativity-records-app.iam.gserviceaccount.com",
+  "client_id": "114132173336156333296",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/streamlit-sync-bot%40creativity-records-app.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
