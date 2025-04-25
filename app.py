@@ -6,6 +6,11 @@ from openai import OpenAI
 from challenge_page import show_challenge_page
 
 st.set_page_config(page_title="Questo - Creativity Assistant", layout="centered")
+# 🔁 接收網址中的 page=? 參數
+query_params = st.experimental_get_query_params()
+if "page" in query_params and query_params["page"][0].isdigit():
+    st.session_state.page = int(query_params["page"][0])
+    
 titles = {
     1: {"E": "🏁 Event Challenge Description", "C": "🏁 活動挑戰說明"},
     2: {"E": "💡 Initial Idea Generation", "C": "💡 初步構想發想"},
