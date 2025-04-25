@@ -172,29 +172,21 @@ elif st.session_state.page == 4:
 
     st.button("下一頁 / Next", on_click=next_page)
     st.button("上一頁 / Back", on_click=prev_page)
-# 第 5 頁：整合創意成果
+# 第 5 頁：最終創意發想（不寫入 Excel，只存入 session_state）
 elif st.session_state.page == 5:
-    st.title(titles[st.session_state.page][lang_code])
-    final_ideas = st.text_area("請輸入你與 ChatGPT 對話後，整理出的三個創意點子", key="final_ideas_input")
-    if st.button("送出創意", key="submit_ideas5"):
-        try:
-            df = pd.read_excel("Database.xlsx")
-        except:
-            df = pd.DataFrame()
+    if lang_code == "E":
+        st.title("📝 Submit Final Creative Ideas")
+        final_ideas = st.text_area("Based on your experience and exploration, what are the three most creative ideas you can come up with?")
+    else:
+        st.title("📝 整合創意成果")
+        final_ideas = st.text_area("根據您的體驗與探索，您能想到的三個最具創意的想法是什麼？")
 
-        row = {
-            "時間戳記": datetime.now().isoformat(),
-            "使用者編號": st.session_state.user_id,
-            "語言": st.session_state.language,
-            "來源": "最終創意發想",
-            "創意發想結果": final_ideas
-        }
-        df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
-        df.to_excel("Database.xlsx", index=False)
-        st.success("🎉 創意點子已送出並儲存！")
+    if st.button("送出 / Submit Final Ideas", key="submit_final_idea"):
+        st.session_state.final_idea = final_ideas
+        st.success("✅ 最終創意已儲存！請繼續完成問卷")
+        next_page()
 
-    st.button("下一頁 / Next", on_click=next_page, key="next_page")
-    st.button("上一頁 / Back", on_click=prev_page, key="back_page")
+    st.button("上一頁 / Back", on_click=prev_page, key="back_from_final")
 
 # 第 6 頁：體驗問卷 + 資料整合寫入
 elif st.session_state.page == 6:
