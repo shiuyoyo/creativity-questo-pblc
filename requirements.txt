@@ -1,6 +1,4 @@
 streamlit
 pandas
+fpdf
 openpyxl
-tiktoken
-langchain-openai
-python-dotenv
