@@ -259,15 +259,17 @@ elif st.session_state.page == 6:
             final_row[f"問卷Q{i+1}"] = score
         final_row["開放回饋"] = comment
 
+        # ✅ 寫入本地 Excel
         df = pd.concat([df, pd.DataFrame([final_row])], ignore_index=True)
         df.to_excel("Database.xlsx", index=False)
+        st.success("✅ 感謝您填寫問卷並完成本次任務！")
+
         # ✅ 寫入 Google Sheet（失敗時提示）
         try:
             from google_sheet_sync import write_to_google_sheet
             write_to_google_sheet(final_row)
         except Exception as e:
             st.warning(f"⚠️ Google Sheet 備份失敗：{e}")
-            st.success("✅ 感謝您填寫問卷並完成本次任務！")
 
 # 第 7 頁：教師報表頁
 elif st.session_state.page == 7:
