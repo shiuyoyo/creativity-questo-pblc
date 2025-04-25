@@ -2,3 +2,5 @@ streamlit
 pandas
 fpdf
 openpyxl
+gspread
+oauth2client
