@@ -33,4 +33,3 @@ You do not have to delight all types of guests.
 在此階段，你不必擔心實施的成本和資源。
 你不必取悅所有類型的客人。
 """)
-    st.button("下一頁 / Next", on_click=next_page_callback)
