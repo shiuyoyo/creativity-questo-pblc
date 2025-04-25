@@ -35,8 +35,8 @@ def prev_page():
     st.session_state.page -= 1
 
 if st.session_state.page == 1:
-    st.title("🏁 活動挑戰說明")
     if lang_code == "E":
+        st.title("🏁 Event Challenge Description")
         st.markdown("""You have joined a competition that aims at sourcing the best idea for a hotel located in a business district of an urban city to find good uses of the waste it produces. The hotel is situated next to a hospital, a convention center, and a major tourist attraction.
 
 Guests include: Business travelers, Convention Attendees, Friends and Families of Patients, Tourists
@@ -52,6 +52,7 @@ You do not have to worry about the costs and resources required.
 You do not have to delight all types of guests.
 """)
     else:
+        st.title("🏁 活動挑戰說明")
         st.markdown("""你要參加一個比賽，是在為一間位於都市商業區的飯店尋找最佳理念，找到飯店產生的廢棄物的良好用途。該飯店位於醫院、會議中心和主要旅遊景點旁邊。
 
 其客群主要為：商務旅客、會議參加者、病人的親友、遊客
