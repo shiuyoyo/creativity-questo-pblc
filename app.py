@@ -53,6 +53,11 @@ if 'llm' not in st.session_state:
 if 'language' not in st.session_state:
     st.session_state.language = "English"
 
+st.markdown(
+    "<div style='text-align: right; font-size: 0.9em;'>🔐 <a href='https://your-app-name.streamlit.app/admin_report' target='_blank'>教師報表頁</a></div>",
+    unsafe_allow_html=True
+)
+
 st.selectbox(
     "Choose your language / 選擇語言",
     ["English", "中文"],
