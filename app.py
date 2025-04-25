@@ -184,10 +184,9 @@ elif st.session_state.page == 5:
     if st.button("送出 / Submit Final Ideas", key="submit_final_idea"):
         st.session_state.final_idea = final_ideas
         st.success("✅ 最終創意已儲存！請繼續完成問卷")
-        next_page()
 
     st.button("上一頁 / Back", on_click=prev_page, key="back_from_final")
-
+    st.button("下一頁 / Next", on_click=next_page)
 # 第 6 頁：體驗問卷 + 資料整合寫入
 elif st.session_state.page == 6:
     questions_text = {
