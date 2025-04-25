@@ -49,7 +49,7 @@ elif st.session_state.page == 2:
     if activity.strip():
         st.session_state.activity_warning = False
 
-    if st.button("下一頁 / Next"):
+    if st.button("下一頁 / Next", on_click=next_page, key="next_btn"):
         if activity.strip() == "":
             st.session_state.activity_warning = True
         else:
