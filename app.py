@@ -40,28 +40,28 @@ if st.session_state.page == 1:
     
     st.button("下一頁 / Next", on_click=next_page)
 
-
 elif st.session_state.page == 2:
     st.title("💡 初步構想發想")
     if 'activity_warning' not in st.session_state:
         st.session_state.activity_warning = False
 
-    with st.form("activity_form"):
-        activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas", value=st.session_state.get("activity", ""))
-        submitted = st.form_submit_button("送出構想 / Submit")
-        if submitted:
-            if activity.strip() == "":
-                st.session_state.activity_warning = True
-            else:
-                st.session_state.activity = activity
-                st.session_state.llm.setup_language_and_activity(lang_code, activity)
-                st.session_state.activity_warning = False
-                next_page()
+    activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas", value=st.session_state.get("activity", ""))
+    if activity.strip():
+        st.session_state.activity_warning = False
+
+    if st.button("下一頁 / Next"):
+        if activity.strip() == "":
+            st.session_state.activity_warning = True
+        else:
+            st.session_state.activity = activity
+            st.session_state.llm.setup_language_and_activity(lang_code, activity)
+            next_page()
 
     if st.session_state.activity_warning:
         st.warning("⚠️ 請先輸入構想內容！")
 
-    st.button("上一頁 / Back", on_click=prev_page, key="back2")
+    st.button("上一頁 / Back", on_click=prev_page)
+
 elif st.session_state.page == 3:
     st.title("🧠 與小Q AI 助教對話")
 
