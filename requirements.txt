@@ -4,3 +4,4 @@ fpdf
 openpyxl
 gspread
 oauth2client
+tiktoken
