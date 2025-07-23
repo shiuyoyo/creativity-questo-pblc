@@ -7,3 +7,7 @@ oauth2client
 streamlit
 tiktoken
 pydantic
+langchain-openai
+langchain-core
+langchain
+openai
