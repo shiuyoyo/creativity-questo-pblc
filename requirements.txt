@@ -4,4 +4,6 @@ fpdf
 openpyxl
 gspread
 oauth2client
+streamlit
 tiktoken
+pydantic
