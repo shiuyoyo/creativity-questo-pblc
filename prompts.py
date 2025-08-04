@@ -1,7 +1,6 @@
 #================================================================================================
-#============================================ACTIVITIY===========================================
+#============================================ACTIVITY============================================
 #================================================================================================
-
 DEFAULT_ACTIVITIY = '''
 You are participating in a competition aimed at finding the best ideas for a hotel located in an urban business district to find good uses for the waste it generates. The hotel is situated next to a hospital, a convention center, and a major tourist attraction.
 Therefore, its guests are mainly composed of:
@@ -9,10 +8,8 @@ Therefore, its guests are mainly composed of:
 2. Convention attendees
 3. Friends and families of patients
 4. Tourists
-
 You are required to propose three best ideas for the competition based on the following item:
 "Old towels to be disposed of."
-
 In order to win the competition, your ideas should:
 1. Help transform the waste at the hotel into something that delights the guests.
 2. Be creative.
@@ -21,7 +18,6 @@ In order to win the competition, your ideas should:
 #================================================================================================
 #================================================LLM=============================================
 #================================================================================================
-
 USER_TEMPLATE = '''Student's Question: {question}'''
 
 CLS_TEMPLATE = '''
@@ -42,7 +38,6 @@ Please reply in {language}.
 
 SCAMPER_TEMPLATE = '''
 You are an AI teaching assistant. Your job is to help students ask more creative and specific questions to obtain better answers from LLM. You will be using SCAMPER method for your task. Here is some information about SCAMPER:
-
 Meaning of SCAMPER
 S = Substitute: Is there a new function or material that can replace the original functionality or material?
 C = Combine: Which functions can be integrated with the original functions? How can they be integrated and used?
@@ -51,24 +46,20 @@ M = Magnify/Modify: Is there room for minor adjustments or more exaggerated chan
 P = Put to other uses: Can the product have additional uses beyond its current functionality?
 E = Eliminate: Which functions can be removed? Which materials can be reduced?
 R = Re-arrange: Can the order be reorganized?
-
 Steps of SCAMPER
 Step 1: Create a checklist with 5 vertical columns and 8 horizontal rows.
 Step 2: Identify the most suitable definitions for each entry point.
 Step 3: Design questions.
 Step 4: Think about possible answers.
 Step 5: Evaluate feasible options and implement process improvements or product enhancements.
-
 Currently, there is a class activity with the content:
 {content}
-
 You are now given a question from a student and you will do these 2 things:
 (1) Evaluate the question's strength and weaknesses with suggestion to improvement based on the following criteria:
     (a) SCAMPER element {element}: Analyze the question and potential improvement with the GIVEN SCAMPER element e.g. Adapt, Combine, Put to other uses. Here are some examples on how the element can be used: {examples}. The examples are for your reference only. DO NOT use them in your output.
     (b) Specificity: The question should always be specific. If the question does not contain a target group or more than one target group, remind the student to pick ONLY ONE specific group to focus on.
     The evaluation and the suggestions should be specific with detailed explainations with elaborations. Under No cicumstances should you mention or quote the word 'SCAMPER', SCAMPER elements or the definition.
 (2) Based on the improvement you suggested, provide a new and better question. The question should always focus on ONLY ONE specific group.
-
 Please reply in {language}.
 '''
 
@@ -112,3 +103,63 @@ EXAMPLES = {
         3. Adidas rearranged their supply chain to prioritize local production and reduce carbon emissions associated with transportation. This reorganization allowed them to create a more sustainable and efficient production process.
         """,
 }
+
+#================================================================================================
+#=========================================HELPER FUNCTIONS===================================== 
+#================================================================================================
+
+def classify_question(student_question):
+    """
+    分類學生問題的函數
+    返回完整的分類提示
+    """
+    return CLS_TEMPLATE.format(
+        content=DEFAULT_ACTIVITIY,
+        question=student_question
+    )
+
+def generate_guidance(student_question, language="English"):
+    """
+    生成指導建議的函數
+    """
+    return GUIDE_TEMPLATE.format(
+        content=DEFAULT_ACTIVITIY,
+        language=language,
+        question=student_question
+    )
+
+def generate_scamper_feedback(student_question, scamper_element, language="English"):
+    """
+    生成SCAMPER反饋的函數
+    scamper_element: 'S', 'C', 'A', 'M', 'P', 'E', 或 'R'
+    """
+    examples = EXAMPLES.get(scamper_element, "")
+    return SCAMPER_TEMPLATE.format(
+        content=DEFAULT_ACTIVITIY,
+        element=scamper_element,
+        examples=examples,
+        language=language,
+        question=student_question
+    )
+
+# 使用範例：
+if __name__ == "__main__":
+    # 測試分類功能
+    student_msg = "how to reuse towel"
+    classification_prompt = classify_question(student_msg)
+    print("=== 分類提示 ===")
+    print(classification_prompt)
+    
+    print("\n" + "="*50 + "\n")
+    
+    # 測試指導功能
+    guidance_prompt = generate_guidance("Which group should I focus on?", "Chinese")
+    print("=== 指導提示 ===")
+    print(guidance_prompt)
+    
+    print("\n" + "="*50 + "\n")
+    
+    # 測試SCAMPER功能
+    scamper_prompt = generate_scamper_feedback("how to reuse towel", "S", "Chinese")
+    print("=== SCAMPER提示 ===")
+    print(scamper_prompt[:500] + "...")  # 只顯示前500字符
