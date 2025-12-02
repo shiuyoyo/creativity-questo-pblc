@@ -191,6 +191,8 @@ if 'llm' not in st.session_state:
     st.session_state.llm = LLM()
 if 'language' not in st.session_state:
     st.session_state.language = "English"
+if 'maintenance_mode' not in st.session_state:
+    st.session_state.maintenance_mode = False  # ✅ 加入維護模式開關
 
 st.markdown(
     "<div style='text-align: right; font-size: 0.9em;'>🔐 <a href='?page=7'>教師報表頁</a></div>",
@@ -321,45 +323,233 @@ elif st.session_state.page == 5:
     st.button(ui_texts["next_back_button"][lang_code], on_click=next_page)
 # 第 6 頁：體驗問卷 + 資料整合寫入
 elif st.session_state.page == 6:
-    questions_text = {
+    # ✅ 完整的7分量表問卷
+    questionnaire_data = {
         "title": {
-            "E": "🎯 Feedback Questionnaire",
-            "C": "🎯 小Q體驗問卷調查"
+            "E": "🎯 Research Questionnaire",
+            "C": "🎯 研究問卷調查"
         },
-        "instruction": {
-            "E": "Based on your experience with this activity, choose the score that best represents your feelings. (1 = Strongly Disagree, 5 = Strongly Agree)",
-            "C": "請根據您在這次活動中的經驗，選擇最符合您感受的分數（1 = 非常不同意，5 = 非常同意）"
+        "scale_labels": {
+            "E": ["1: Strongly Disagree", "2: Disagree", "3: Slightly Disagree", "4: Neutral", "5: Slightly Agree", "6: Agree", "7: Strongly Agree"],
+            "C": ["1: 非常不同意", "2: 不同意", "3: 有點不同意", "4: 中立", "5: 有點同意", "6: 同意", "7: 非常同意"]
         },
-        "questions": {
-            "E": [
-                "I found Little Q easy to use.",
-                "The interaction flow was smooth and clear.",
-                "Little Q's feedback was helpful.",
-                "I would recommend Little Q to others.",
-                "The interaction helped me think more creatively.",
-                "Other comments or suggestions (optional)"
-            ],
-            "C": [
-                "小Q提問助手的介面容易使用",
-                "整體互動流程清楚、順暢",
-                "小Q的回饋對我有幫助",
-                "我會推薦小Q給其他人",
-                "與小Q的互動提升了我的創意思考",
-                "其他建議或意見（非必填）"
-            ]
+        "sections": {
+            "E": {
+                "demographics": {
+                    "title": "Section 1: Demographics",
+                    "questions": [
+                        {
+                            "text": "Gender:",
+                            "type": "radio",
+                            "options": ["Male", "Female", "Prefer not to say"],
+                            "key": "gender"
+                        },
+                        {
+                            "text": "Year of Study:",
+                            "type": "radio", 
+                            "options": ["2nd Year", "3rd Year", "4th Year", "Graduate"],
+                            "key": "year_study"
+                        },
+                        {
+                            "text": "Major:",
+                            "type": "radio",
+                            "options": ["Hospitality Management", "Tourism Management", "F&B Management", "Culinary Arts", "Other"],
+                            "key": "major"
+                        },
+                        {
+                            "text": "Prior Experience with Generative AI:",
+                            "type": "radio",
+                            "options": ["Never used", "Novice", "Intermediate", "Advanced"],
+                            "key": "ai_experience"
+                        }
+                    ]
+                },
+                "problem_solving": {
+                    "title": "Section 2: Your Problem-Solving Style",
+                    "questions": [
+                        "I feel that I am good at generating novel ideas for hospitality problems.",
+                        "I have confidence in my ability to solve problems creatively.",
+                        "I have a knack for further developing the ideas of others.",
+                        "To ensure that you are paying attention to the questions, please select \"Strongly Disagree\" (1) for this item.",
+                        "I am good at finding creative solutions to complex problems.",
+                        "I suggest new ways to achieve goals or objectives.",
+                        "I feel confident in my ability to ask insightful questions."
+                    ]
+                },
+                "ai_experience_section": {
+                    "title": "Section 3: Your Experience Using the AI Tool",
+                    "questions": [
+                        "Using Questo improves my performance in solving the assigned case study.",
+                        "Questo enables me to formulate questions more quickly than I could alone.",
+                        "I find Questo useful for generating a wider variety of questions.",
+                        "Using Questo makes it easier to understand the core problem.",
+                        "Overall, I find Questo to be useful in my learning process.",
+                        "My interaction with the AI Questioning Support Tool is clear and understandable.",
+                        "It is easy for me to become skillful at using Questo.",
+                        "Technology in hospitality is advancing rapidly. To show that you are reading the statements carefully, please ignore the scale and select \"Neutral\" (4) for this question.",
+                        "I find Questo easy to interact with (e.g., the chat interface is intuitive).",
+                        "Getting Questo to provide the help I needed was easy.",
+                        "I did not require a lot of mental effort to learn how to operate Questo."
+                    ]
+                },
+                "outcomes": {
+                    "title": "Section 5: Project Outcomes & Reflection",
+                    "questions": [
+                        "Questo helped me generate a large number of questions regarding the problem.",
+                        "I was able to come up with more solutions than usual with the help of Questo.",
+                        "Questo helped me see the problem from different angles/perspectives.",
+                        "Questo's suggestions helped me break away from my initial, fixed assumptions.",
+                        "In order to verify the quality of our data, please select \"Strongly Agree\" (7) for this statement.",
+                        "I was able to switch between different types of questions (e.g., strategic vs. operational) easily.",
+                        "The questions I formulated with Questo were unique and innovative.",
+                        "Questo helped me discover ideas I would never have thought of on my own.",
+                        "The final solution I proposed was novel compared to standard solutions."
+                    ]
+                },
+                "future": {
+                    "title": "Section 6: Future Outlook",
+                    "questions": [
+                        "Assuming I have access to this AI tool, I intend to use it for future class assignments.",
+                        "I would recommend this AI Questioning Support Tool to other hospitality students."
+                    ]
+                }
+            },
+            "C": {
+                "demographics": {
+                    "title": "第一部分：基本資料",
+                    "questions": [
+                        {
+                            "text": "生理性別：",
+                            "type": "radio",
+                            "options": ["男", "女", "不願透露"],
+                            "key": "gender"
+                        },
+                        {
+                            "text": "年級：",
+                            "type": "radio",
+                            "options": ["大二", "大三", "大四", "研究所"],
+                            "key": "year_study"
+                        },
+                        {
+                            "text": "主修科系：",
+                            "type": "radio",
+                            "options": ["餐旅管理", "觀光管理", "餐飲管理", "廚藝", "其他"],
+                            "key": "major"
+                        },
+                        {
+                            "text": "生成式 AI (如 ChatGPT) 使用經驗：",
+                            "type": "radio",
+                            "options": ["從未用過", "初學者 (偶爾嘗試)", "中等程度 (曾用於作業或日常事務)", "進階使用者 (經常使用並熟悉提示詞技巧)"],
+                            "key": "ai_experience"
+                        }
+                    ]
+                },
+                "problem_solving": {
+                    "title": "第二部分：您的問題解決風格",
+                    "questions": [
+                        "覺得自己擅長針對餐旅業的問題提出新穎的想法。",
+                        "我有信心能創造性地解決問題。",
+                        "我擅長延伸或進一步發展他人的想法。",
+                        "為了確保您有仔細閱讀題目，請在本題選擇「非常不同意」(1)。",
+                        "我擅長為複雜的問題找到創新的解決方案。",
+                        "我會提出新的方法來達成目標。",
+                        "我有信心能提出具洞察力的問題。"
+                    ]
+                },
+                "ai_experience_section": {
+                    "title": "第三部分：您使用 AI 工具的經驗",
+                    "questions": [
+                        "使用 小Q改善了我解決個案研究的表現。",
+                        "這個 小Q讓我能比自己單獨作業時更快擬定問題。",
+                        "我發現小Q對於產生「更多樣化」的問題很有用。",
+                        "使用小Q讓我更容易理解核心問題所在。",
+                        "整體而言，我覺得小Q對我的學習過程很有用。",
+                        "我與 小Q的互動過程是清晰易懂的。",
+                        "我很容易就能熟練地使用小Q。",
+                        "餐旅業的科技發展相當迅速。為了證明您有詳閱這些敘述，請忽略量表選項，直接在本題選擇「普通」(4)。",
+                        "我覺得小Q很容易互動（例如：聊天介面很直觀）。",
+                        "我能輕鬆透過小Q獲得我需要的協助。",
+                        "我不需要花費太多心力去學習如何操作小Q。"
+                    ]
+                },
+                "outcomes": {
+                    "title": "第五部分：成果與反思",
+                    "questions": [
+                        "小Q幫助我針對問題產生了大量的提問（流暢力）。",
+                        "在 小Q的協助下，我能比平常提出更多的解決方案。",
+                        "小Q幫助我從不同的角度或觀點來看待問題（變通力）。",
+                        "小Q的建議幫助我打破了最初的既定假設或固著觀點。",
+                        "為了驗證我們資料的品質，請在本題直接選擇「非常同意」(7)。",
+                        "我能輕鬆地在不同類型的問題（例如：策略性 vs. 營運性）之間切換。",
+                        "我透過小Q擬定的問題是獨特且創新的（獨創力）。",
+                        "小Q幫助我發現了一些我自己絕對想不到的想法。",
+                        "與標準答案相比，我提出的最終解決方案相當新穎。"
+                    ]
+                },
+                "future": {
+                    "title": "第六部分：未來展望",
+                    "questions": [
+                        "假設我能使用小Q，我打算在未來的課堂作業中使用它。",
+                        "我會向其他餐旅系學生推薦小Q。"
+                    ]
+                }
+            }
         }
     }
 
-    st.title(questions_text["title"][lang_code])
-    st.markdown(questions_text["instruction"][lang_code])
-    questions = questions_text["questions"][lang_code]
+    st.title(questionnaire_data["title"][lang_code])
+    st.markdown(f"**{' | '.join(questionnaire_data['scale_labels'][lang_code])}**")
 
-    responses = []
-    for i, q in enumerate(questions[:-1]):
-        resp = st.radio(q, [1, 2, 3, 4, 5], horizontal=True, key=f"survey_q{i+1}")
-        responses.append(resp)
-
-    comment = st.text_area(questions[-1], key="survey_comment")
+    responses = {}
+    
+    # Section 1: Demographics
+    st.subheader(questionnaire_data["sections"][lang_code]["demographics"]["title"])
+    for q_data in questionnaire_data["sections"][lang_code]["demographics"]["questions"]:
+        responses[q_data["key"]] = st.radio(
+            q_data["text"], 
+            q_data["options"], 
+            key=f"demo_{q_data['key']}"
+        )
+    
+    # Section 2: Problem-Solving Style  
+    st.subheader(questionnaire_data["sections"][lang_code]["problem_solving"]["title"])
+    for i, question in enumerate(questionnaire_data["sections"][lang_code]["problem_solving"]["questions"]):
+        responses[f"problem_solving_{i+1}"] = st.radio(
+            question,
+            [1, 2, 3, 4, 5, 6, 7],
+            horizontal=True,
+            key=f"ps_{i+1}"
+        )
+    
+    # Section 3: AI Experience
+    st.subheader(questionnaire_data["sections"][lang_code]["ai_experience_section"]["title"])
+    for i, question in enumerate(questionnaire_data["sections"][lang_code]["ai_experience_section"]["questions"]):
+        responses[f"ai_experience_{i+1}"] = st.radio(
+            question,
+            [1, 2, 3, 4, 5, 6, 7],
+            horizontal=True,
+            key=f"ai_exp_{i+1}"
+        )
+    
+    # Section 5: Outcomes (Note: keeping as Section 5 as per original)
+    st.subheader(questionnaire_data["sections"][lang_code]["outcomes"]["title"])
+    for i, question in enumerate(questionnaire_data["sections"][lang_code]["outcomes"]["questions"]):
+        responses[f"outcomes_{i+1}"] = st.radio(
+            question,
+            [1, 2, 3, 4, 5, 6, 7],
+            horizontal=True,
+            key=f"outcomes_{i+1}"
+        )
+    
+    # Section 6: Future Outlook
+    st.subheader(questionnaire_data["sections"][lang_code]["future"]["title"])
+    for i, question in enumerate(questionnaire_data["sections"][lang_code]["future"]["questions"]):
+        responses[f"future_{i+1}"] = st.radio(
+            question,
+            [1, 2, 3, 4, 5, 6, 7],
+            horizontal=True,
+            key=f"future_{i+1}"
+        )
 
     if st.button(ui_texts["survey_submit"][lang_code], key="submit_survey_final"):
         try:
@@ -381,14 +571,12 @@ elif st.session_state.page == 6:
             final_row[f"小Q 回覆{i+1}"] = r['OUTPUT']['GUIDE'] or r['OUTPUT']['EVAL']
 
         # GPT 對話
-        for i, (q, r) in enumerate(st.session_state.get("gpt_chat", [])):
-            final_row[f"GPT 問題{i+1}"] = q
-            final_row[f"GPT 回覆{i+1}"] = r
+        gpt_interactions = [item for item in st.session_state.get("gpt_chat", []) if item[0] == "user"]
+        for i, (role, text) in enumerate(gpt_interactions):
+            final_row[f"GPT 問題{i+1}"] = text
 
-        # 問卷結果
-        for i, score in enumerate(responses):
-            final_row[f"問卷Q{i+1}"] = score
-        final_row["開放回饋"] = comment
+        # ✅ 問卷結果 - 新的完整版本
+        final_row.update(responses)
 
         # ✅ 寫入本地 Excel
         df = pd.concat([df, pd.DataFrame([final_row])], ignore_index=True)
