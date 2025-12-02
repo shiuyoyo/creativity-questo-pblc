@@ -21,6 +21,139 @@ titles = {
     6: {"E": "🎯 Feedback Questionnaire", "C": "🎯 小Q體驗問卷調查"},
 }
 
+# ✅ 完整的語言文字字典
+ui_texts = {
+    # 第2頁 - 初步構想
+    "idea_input_label": {
+        "E": "Your 3 ideas / 請輸入三個最具創意的想法",
+        "C": "請輸入三個最具創意的想法 / Your 3 ideas"
+    },
+    "idea_warning": {
+        "E": "⚠️ Please enter your ideas first!",
+        "C": "⚠️ 請先輸入構想內容！"
+    },
+    
+    # 第3頁 - 小Q對話
+    "littleq_input_prompt": {
+        "E": "Enter your question for Little Q (type 'end' to finish)",
+        "C": "請輸入你想問小Q的問題（輸入 'end' 結束對話）"
+    },
+    "littleq_submit_button": {
+        "E": "Submit Question",
+        "C": "送出問題"
+    },
+    "littleq_no_response": {
+        "E": "⚠️ Little Q has no suggestions at the moment",
+        "C": "⚠️ 小Q暫時無提供建議"
+    },
+    
+    # 第4頁 - ChatGPT對話
+    "gpt_input_label": {
+        "E": "Enter your question for ChatGPT",
+        "C": "輸入你的問題給 ChatGPT"
+    },
+    "gpt_submit_button": {
+        "E": "Submit to ChatGPT",
+        "C": "送出給 ChatGPT"
+    },
+    "gpt_api_error": {
+        "E": "⚠️ Please set OPENAI_API_KEY in Streamlit Secrets",
+        "C": "⚠️ 請在 Streamlit Secrets 設定 OPENAI_API_KEY"
+    },
+    "gpt_response_error": {
+        "E": "OpenAI response error: {error}",
+        "C": "OpenAI 回應錯誤：{error}"
+    },
+    "gpt_system_prompt": {
+        "E": "You are an AI teaching assistant skilled in guiding creative thinking",
+        "C": "你是一位擅長引導創意思考的 AI 助教"
+    },
+    
+    # 第5頁 - 最終創意
+    "final_idea_prompt": {
+        "E": "Based on your experience and exploration, what are the three most creative ideas you can come up with?",
+        "C": "根據您的體驗與探索，您能想到的三個最具創意的想法是什麼？"
+    },
+    "final_idea_submit": {
+        "E": "Submit Final Ideas",
+        "C": "送出最終創意"
+    },
+    "final_idea_success": {
+        "E": "✅ Final ideas saved! Please continue to complete the questionnaire",
+        "C": "✅ 最終創意已儲存！請繼續完成問卷"
+    },
+    
+    # 第6頁 - 問卷
+    "survey_submit": {
+        "E": "📩 Submit Questionnaire",
+        "C": "📩 送出問卷"
+    },
+    "survey_success": {
+        "E": "✅ Thank you for completing the questionnaire and this task!",
+        "C": "✅ 感謝您填寫問卷並完成本次任務！"
+    },
+    "survey_backup_warning": {
+        "E": "⚠️ Google Sheet backup failed: {error}",
+        "C": "⚠️ Google Sheet 備份失敗：{error}"
+    },
+    
+    # 第7頁 - 教師報表
+    "admin_title": {
+        "E": "🔒 Teacher Report Dashboard",
+        "C": "🔒 教師後台報表"
+    },
+    "admin_password_prompt": {
+        "E": "Please enter teacher password to view reports",
+        "C": "請輸入教師密碼以檢視報表"
+    },
+    "admin_password_warning": {
+        "E": "Please enter the correct password to access teacher page",
+        "C": "請輸入正確密碼以進入教師頁面"
+    },
+    "admin_login_success": {
+        "E": "Login successful ✅ Welcome to the teacher report page!",
+        "C": "登入成功 ✅ 歡迎使用教師報表頁！"
+    },
+    "admin_no_data_error": {
+        "E": "⚠️ Unable to read data, please confirm Database.xlsx exists",
+        "C": "⚠️ 無法讀取資料，請確認是否有正確的 Database.xlsx"
+    },
+    "admin_no_records": {
+        "E": "Currently no interaction records. Please confirm at least one student has submitted content.",
+        "C": "目前尚無任何互動紀錄。請確認至少有一位學生提交過內容。"
+    },
+    "admin_export_excel": {
+        "E": "📥 Export Excel",
+        "C": "📥 匯出 Excel"
+    },
+    "admin_export_pdf": {
+        "E": "📄 Download Integrated Report (PDF)",
+        "C": "📄 下載整合報表（PDF）"
+    },
+    "admin_download_pdf": {
+        "E": "📥 Click to Download PDF",
+        "C": "📥 點我下載 PDF"
+    },
+    
+    # 通用按鈕
+    "next_button": {
+        "E": "Next",
+        "C": "下一頁"
+    },
+    "back_button": {
+        "E": "Back", 
+        "C": "上一頁"
+    },
+    "next_back_button": {
+        "E": "Next / 下一頁",
+        "C": "下一頁 / Next"
+    },
+    "back_next_button": {
+        "E": "Back / 上一頁",
+        "C": "上一頁 / Back"
+    }
+}
+
 questions_text = {
     "instruction": {
         "E": "Based on your experience with this activity, choose the score that best represents your feelings. (1 = Strongly Disagree, 5 = Strongly Agree)",
@@ -89,11 +222,11 @@ elif st.session_state.page == 2:
     if 'activity_warning' not in st.session_state:
         st.session_state.activity_warning = False
 
-    activity = st.text_area("請輸入三個最具創意的想法 / Your 3 ideas", value=st.session_state.get("activity", ""))
+    activity = st.text_area(ui_texts["idea_input_label"][lang_code], value=st.session_state.get("activity", ""))
     if activity.strip():
         st.session_state.activity_warning = False
 
-    if st.button("下一頁 / Next"):
+    if st.button(ui_texts["next_back_button"][lang_code]):
         if activity.strip() == "":
             st.session_state.activity_warning = True
         else:
@@ -102,9 +235,9 @@ elif st.session_state.page == 2:
             next_page()
 
     if st.session_state.activity_warning:
-        st.warning("⚠️ 請先輸入構想內容！")
+        st.warning(ui_texts["idea_warning"][lang_code])
 
-    st.button("上一頁 / Back", on_click=prev_page)
+    st.button(ui_texts["back_next_button"][lang_code], on_click=prev_page)
 
 elif st.session_state.page == 3:
     st.title(titles[st.session_state.page][lang_code])
@@ -114,11 +247,12 @@ elif st.session_state.page == 3:
             st.write(q)
         with st.chat_message("assistant"):
             reply = r['OUTPUT']['GUIDE'] or r['OUTPUT']['EVAL']
-            st.write(reply if reply.strip() else "⚠️ 小Q暫時無提供建議")
+            st.write(reply if reply.strip() else ui_texts["littleq_no_response"][lang_code])
 
     with st.form("question_form"):
-        question = st.text_input("請輸入你想問小Q的問題（輸入 'end' 結束對話）", key="input_q")
-        submitted = st.form_submit_button("送出問題 / Submit")
+        # ✅ 修正：使用動態語言文字
+        question = st.text_input(ui_texts["littleq_input_prompt"][lang_code], key="input_q")
+        submitted = st.form_submit_button(f"{ui_texts['littleq_submit_button'][lang_code]} / Submit")
 
         if submitted and question.strip() and question.lower() != "end":
             llm_response = st.session_state.llm.Chat(question, lang_code, st.session_state.activity)
@@ -142,22 +276,23 @@ elif st.session_state.page == 3:
             df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
             df.to_excel("Database.xlsx", index=False)
 
-    st.button("下一頁 / Next", on_click=next_page)
-    st.button("上一頁 / Back", on_click=prev_page)
+    # ✅ 修正：使用動態語言文字
+    st.button(ui_texts["next_back_button"][lang_code], on_click=next_page)
+    st.button(ui_texts["back_next_button"][lang_code], on_click=prev_page)
 
 elif st.session_state.page == 4:
     st.title(titles[st.session_state.page][lang_code])
-    msg = st.text_input("輸入你的問題給 ChatGPT", key="gpt_input")
-    if st.button("送出給 ChatGPT"):
+    msg = st.text_input(ui_texts["gpt_input_label"][lang_code], key="gpt_input")
+    if st.button(ui_texts["gpt_submit_button"][lang_code]):
         if "OPENAI_API_KEY" not in st.secrets:
-            st.error("⚠️ 請在 Streamlit Secrets 設定 OPENAI_API_KEY")
+            st.error(ui_texts["gpt_api_error"][lang_code])
         else:
             client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
             try:
                 response = client.chat.completions.create(
                     model="gpt-4o",
                     messages=[
-                        {"role": "system", "content": "你是一位擅長引導創意思考的 AI 助教"},
+                        {"role": "system", "content": ui_texts["gpt_system_prompt"][lang_code]},
                         {"role": "user", "content": msg}
                     ]
                 )
@@ -165,29 +300,25 @@ elif st.session_state.page == 4:
                 st.session_state.gpt_chat.append(("user", msg))
                 st.session_state.gpt_chat.append(("gpt", reply))
             except Exception as e:
-                st.error(f"OpenAI 回應錯誤：{e}")
+                st.error(ui_texts["gpt_response_error"][lang_code].format(error=e))
 
     for role, txt in st.session_state.gpt_chat:
         with st.chat_message("user" if role == "user" else "assistant"):
             st.write(txt)
 
-    st.button("下一頁 / Next", on_click=next_page)
-    st.button("上一頁 / Back", on_click=prev_page)
+    st.button(ui_texts["next_back_button"][lang_code], on_click=next_page)
+    st.button(ui_texts["back_next_button"][lang_code], on_click=prev_page)
 # 第 5 頁：最終創意發想（不寫入 Excel，只存入 session_state）
 elif st.session_state.page == 5:
-    if lang_code == "E":
-        st.title("📝 Submit Final Creative Ideas")
-        final_ideas = st.text_area("Based on your experience and exploration, what are the three most creative ideas you can come up with?")
-    else:
-        st.title("📝 整合創意成果")
-        final_ideas = st.text_area("根據您的體驗與探索，您能想到的三個最具創意的想法是什麼？")
+    st.title(titles[st.session_state.page][lang_code])
+    final_ideas = st.text_area(ui_texts["final_idea_prompt"][lang_code])
 
-    if st.button("送出 / Submit Final Ideas", key="submit_final_idea"):
+    if st.button(f"{ui_texts['final_idea_submit'][lang_code]} / Submit Final Ideas", key="submit_final_idea"):
         st.session_state.final_idea = final_ideas
-        st.success("✅ 最終創意已儲存！請繼續完成問卷")
+        st.success(ui_texts["final_idea_success"][lang_code])
 
-    st.button("上一頁 / Back", on_click=prev_page, key="back_from_final")
-    st.button("下一頁 / Next", on_click=next_page)
+    st.button(ui_texts["back_next_button"][lang_code], on_click=prev_page, key="back_from_final")
+    st.button(ui_texts["next_back_button"][lang_code], on_click=next_page)
 # 第 6 頁：體驗問卷 + 資料整合寫入
 elif st.session_state.page == 6:
     questions_text = {
@@ -230,7 +361,7 @@ elif st.session_state.page == 6:
 
     comment = st.text_area(questions[-1], key="survey_comment")
 
-    if st.button("📩 送出問卷", key="submit_survey_final"):
+    if st.button(ui_texts["survey_submit"][lang_code], key="submit_survey_final"):
         try:
             df = pd.read_excel("Database.xlsx")
         except:
@@ -262,48 +393,48 @@ elif st.session_state.page == 6:
         # ✅ 寫入本地 Excel
         df = pd.concat([df, pd.DataFrame([final_row])], ignore_index=True)
         df.to_excel("Database.xlsx", index=False)
-        st.success("✅ 感謝您填寫問卷並完成本次任務！")
+        st.success(ui_texts["survey_success"][lang_code])
 
         # ✅ 寫入 Google Sheet（失敗時提示）
         try:
             from google_sheet_sync import write_to_google_sheet
             write_to_google_sheet(final_row)
         except Exception as e:
-            st.warning(f"⚠️ Google Sheet 備份失敗：{e}")
+            st.warning(ui_texts["survey_backup_warning"][lang_code].format(error=e))
 
 # 第 7 頁：教師報表頁
 elif st.session_state.page == 7:
-    st.title("🔒 教師後台報表")
+    st.title(ui_texts["admin_title"][lang_code])
 
     PASSWORD = "!@#$123456"
-    pw = st.text_input("請輸入教師密碼以檢視報表", type="password", key="admin_pw")
+    pw = st.text_input(ui_texts["admin_password_prompt"][lang_code], type="password", key="admin_pw")
 
     if pw != PASSWORD:
-        st.warning("請輸入正確密碼以進入教師頁面")
+        st.warning(ui_texts["admin_password_warning"][lang_code])
         st.stop()
 
-    st.success("登入成功 ✅ 歡迎使用教師報表頁！")
+    st.success(ui_texts["admin_login_success"][lang_code])
 
     try:
         df = pd.read_excel("Database.xlsx")
     except:
-        st.error("⚠️ 無法讀取資料，請確認是否有正確的 Database.xlsx")
+        st.error(ui_texts["admin_no_data_error"][lang_code])
         st.stop()
 
     if df.empty:
-        st.warning("目前尚無任何互動紀錄。請確認至少有一位學生提交過內容。")
+        st.warning(ui_texts["admin_no_records"][lang_code])
     else:
         st.dataframe(df)
 
         # ✅ 提供 Excel 匯出
-        st.download_button("📥 匯出 Excel", data=open("Database.xlsx", "rb").read(), file_name="Database.xlsx")
+        st.download_button(ui_texts["admin_export_excel"][lang_code], data=open("Database.xlsx", "rb").read(), file_name="Database.xlsx")
 
         # ✅ 匯出 PDF
         from io import BytesIO
         from fpdf import FPDF
         from datetime import datetime
 
-        if st.button("📄 下載整合報表（PDF）", key="dl_pdf"):
+        if st.button(ui_texts["admin_export_pdf"][lang_code], key="dl_pdf"):
             pdf = FPDF()
             pdf.add_page()
             pdf.set_font("Arial", size=12)
@@ -323,4 +454,4 @@ elif st.session_state.page == 7:
             buffer = BytesIO()
             pdf.output(buffer)
             pdf_bytes = buffer.getvalue()
-            st.download_button("📥 點我下載 PDF", data=pdf_bytes, file_name=f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")
+            st.download_button(ui_texts["admin_download_pdf"][lang_code], data=pdf_bytes, file_name=f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")
