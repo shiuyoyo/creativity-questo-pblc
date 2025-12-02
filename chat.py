@@ -58,7 +58,18 @@ class SCAMPEROutput(BaseModel):
 
 class LLM:
     def __init__(self):
-        self.tknizer = tiktoken.encoding_for_model("gpt-4o-mini")
+        self.tknizer = tiktoken.encoding_for_model("gpt-3.5-turbo")  # 改用3.5的tokenizer
+        
+        # ✅ 加入模型配置選項
+        self.model_config = {
+            "cheap": "gpt-3.5-turbo",  # 便宜選項
+            "free": "gpt-3.5-turbo",   # 免費額度選項  
+            "premium": "gpt-4o-mini"   # 高品質選項
+        }
+        
+        # ✅ 根據環境變數或設定選擇模型
+        self.model_choice = os.getenv("QST_MODEL_TIER", "cheap")  # 預設使用便宜選項
+        self.selected_model = self.model_config.get(self.model_choice, "gpt-3.5-turbo")
         
         # ✅ 改進：嘗試從不同來源獲取 API Key
         api_key = self._get_api_key()
@@ -68,29 +79,34 @@ class LLM:
             self.api_available = False
             return
             
-        # ✅ 加入錯誤處理的 LLM 初始化
+        # ✅ 加入錯誤處理的 LLM 初始化 - 使用選定的模型
         try:
+            st.info(f"🤖 Using model: {self.selected_model} (Cost-saving mode)")
+            
             LLM_Classifier = ChatOpenAI(
-                model="gpt-4o-mini-2024-07-18", 
+                model=self.selected_model,
                 api_key=api_key,
                 max_retries=2,
-                request_timeout=30
+                request_timeout=30,
+                temperature=0.3  # 降低temperature以節省成本
             )
             self.LLM_Classifier = LLM_Classifier.with_structured_output(CLSOutput)
 
             LLM_SCAMPER = ChatOpenAI(
-                model="gpt-4o-mini-2024-07-18", 
+                model=self.selected_model,
                 api_key=api_key,
                 max_retries=2,
-                request_timeout=30
+                request_timeout=30,
+                temperature=0.7
             )
             self.LLM_SCAMPER = LLM_SCAMPER.with_structured_output(SCAMPEROutput)
 
             LLM_Guidance = ChatOpenAI(
-                model="gpt-4o-mini-2024-07-18", 
+                model=self.selected_model,
                 api_key=api_key,
                 max_retries=2,
-                request_timeout=30
+                request_timeout=30,
+                temperature=0.5
             )
             self.LLM_Guidance = LLM_Guidance.with_structured_output(GUIDEOutput)
 
@@ -122,7 +138,17 @@ class LLM:
                 return api_function()
             except Exception as e:
                 error_str = str(e).lower()
-                if "rate_limit" in error_str or "ratelimiterror" in str(type(e).__name__).lower():
+                error_type = str(type(e).__name__).lower()
+                
+                # ✅ 檢查是否為額度不足錯誤
+                if "insufficient_quota" in error_str or "quota" in error_str:
+                    st.error("🚫 **OpenAI API 額度不足**")
+                    st.error("請檢查您的 OpenAI 帳戶額度：https://platform.openai.com/usage")
+                    st.info("💡 **解決方案**：\n1. 登入 OpenAI 平台\n2. 查看 Billing & Usage\n3. 增加 API 額度")
+                    return None
+                    
+                # ✅ 檢查是否為速率限制錯誤
+                elif "rate_limit" in error_str or "ratelimiterror" in error_type:
                     if attempt < max_retries - 1:  # 不是最後一次嘗試
                         delay = base_delay * (2 ** attempt)  # 指數退避
                         st.warning(f"⏳ Rate limit exceeded. Retrying in {delay} seconds... (Attempt {attempt + 1}/{max_retries})")
@@ -131,8 +157,11 @@ class LLM:
                     else:
                         st.error("❌ Rate limit exceeded. Please try again later.")
                         return None
+                        
+                # ✅ 其他 API 錯誤
                 else:
-                    st.error(f"API Error: {e}")
+                    st.error(f"❌ **API Error**: {e}")
+                    st.error("請檢查 OpenAI API Key 設定是否正確")
                     return None
         return None
 
@@ -200,7 +229,33 @@ class LLM:
         return {'cost_input': cost_input, 'cost_output': cost_output, 'ntkn_input': n_inputs, 'ntkn_output': n_outputs}
 
     def Chat(self, input_question, language, activity):
-        """✅ 改進：加入完整錯誤處理的聊天功能"""
+        """✅ 改進：加入成本控制的聊天功能"""
+        
+        # ✅ 加入成本控制檢查
+        if 'api_usage_today' not in st.session_state:
+            st.session_state.api_usage_today = 0
+        
+        # 每日使用限制（可調整）
+        DAILY_LIMIT = 50  # 每天最多50次API調用
+        
+        if st.session_state.api_usage_today >= DAILY_LIMIT:
+            return {
+                'INPUT': {'CLS': '', 'GUIDE': '', 'EVAL': ''},
+                'OUTPUT': {
+                    'CLS': '3',
+                    'GUIDE': f'今日API使用已達上限（{DAILY_LIMIT}次）。為了控制研究成本，請明天再繼續使用小Q，或可直接進入第4頁使用免費的ChatGPT。',
+                    'EVAL': '',
+                    'NEWQ': '',
+                },
+                'MISC': {
+                    'SCAMPER_ELEMENT': '',
+                    'QUESTION': input_question,
+                    'cost_input': 0,
+                    'cost_output': 0,
+                    'ntkn_input': 0,
+                    'ntkn_output': 0
+                }
+            }
         
         # 檢查 API 是否可用
         if not hasattr(self, 'api_available') or not self.api_available:
@@ -239,9 +294,12 @@ class LLM:
         if QOutput is None:
             # API 調用失敗的備用響應
             output_dict['OUTPUT']['CLS'] = '3'
-            output_dict['OUTPUT']['GUIDE'] = 'Service temporarily unavailable due to rate limits. Please try again later.'
+            output_dict['OUTPUT']['GUIDE'] = '💡 小Q暫時無法服務，請稍後再試。如果持續發生問題，請聯繫系統管理員檢查 API 設定。\n\n您仍可以繼續使用其他功能，或在第4頁直接與 ChatGPT 對話。'
             return output_dict
             
+        # ✅ 增加使用計數
+        st.session_state.api_usage_today += 1
+        
         output_dict['INPUT']['CLS'] = cls_message
         output_dict['OUTPUT']['CLS'] = str(QOutput.QType)
 
@@ -262,6 +320,7 @@ class LLM:
             if output:
                 output_dict['INPUT']['GUIDE'] = guide_message
                 output_dict['OUTPUT']['GUIDE'] = output.GUID
+                st.session_state.api_usage_today += 1
             else:
                 output_dict['OUTPUT']['GUIDE'] = 'Service temporarily unavailable due to rate limits. Please try again later.'
 
@@ -283,6 +342,7 @@ class LLM:
                 output_dict['OUTPUT']['EVAL'] = output.Imprv
                 output_dict['OUTPUT']['NEWQ'] = output.NewQ
                 output_dict['MISC']['SCAMPER_ELEMENT'] = SCAMPER_DICT[element]
+                st.session_state.api_usage_today += 1
             else:
                 output_dict['OUTPUT']['EVAL'] = 'Service temporarily unavailable due to rate limits. Please try again later.'
         
@@ -291,5 +351,9 @@ class LLM:
         output_messages = [v for k, v in output_dict['OUTPUT'].items() if v]
         cost_dict = self.CalculateCost(input_messages, output_messages)
         output_dict['MISC'].update(cost_dict)
+
+        # ✅ 顯示使用狀態
+        remaining = DAILY_LIMIT - st.session_state.api_usage_today
+        st.sidebar.info(f"📊 今日剩餘: {remaining}/{DAILY_LIMIT} 次")
 
         return output_dict
