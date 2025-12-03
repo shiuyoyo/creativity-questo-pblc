@@ -329,9 +329,25 @@ elif st.session_state.page == 6:
             "E": "🎯 Research Questionnaire",
             "C": "🎯 研究問卷調查"
         },
-        "scale_labels": {
-            "E": ["1: Strongly Disagree", "2: Disagree", "3: Slightly Disagree", "4: Neutral", "5: Slightly Agree", "6: Agree", "7: Strongly Agree"],
-            "C": ["1: 非常不同意", "2: 不同意", "3: 有點不同意", "4: 中立", "5: 有點同意", "6: 同意", "7: 非常同意"]
+        "scale_options": {
+            "E": [
+                "1: Strongly disagree",
+                "2: Disagree", 
+                "3: Slightly disagree",
+                "4: Neutral",
+                "5: Slightly agree",
+                "6: Agree",
+                "7: Strongly agree"
+            ],
+            "C": [
+                "1: 非常不同意",
+                "2: 不同意",
+                "3: 有點不同意", 
+                "4: 中立",
+                "5: 有點同意",
+                "6: 同意",
+                "7: 非常同意"
+            ]
         },
         "sections": {
             "E": {
@@ -498,9 +514,10 @@ elif st.session_state.page == 6:
     }
 
     st.title(questionnaire_data["title"][lang_code])
-    st.markdown(f"**{' | '.join(questionnaire_data['scale_labels'][lang_code])}**")
+    st.markdown(f"**Scale: {' | '.join(questionnaire_data['scale_options'][lang_code])}**")
 
     responses = {}
+    scale_options = questionnaire_data["scale_options"][lang_code]
     
     # Section 1: Demographics
     st.subheader(questionnaire_data["sections"][lang_code]["demographics"]["title"])
@@ -514,42 +531,46 @@ elif st.session_state.page == 6:
     # Section 2: Problem-Solving Style  
     st.subheader(questionnaire_data["sections"][lang_code]["problem_solving"]["title"])
     for i, question in enumerate(questionnaire_data["sections"][lang_code]["problem_solving"]["questions"]):
-        responses[f"problem_solving_{i+1}"] = st.radio(
+        selected_option = st.radio(
             question,
-            [1, 2, 3, 4, 5, 6, 7],
-            horizontal=True,
+            scale_options,
             key=f"ps_{i+1}"
         )
+        # 提取數字值用於資料儲存 (1-7)
+        responses[f"problem_solving_{i+1}"] = int(selected_option.split(":")[0])
     
     # Section 3: AI Experience
     st.subheader(questionnaire_data["sections"][lang_code]["ai_experience_section"]["title"])
     for i, question in enumerate(questionnaire_data["sections"][lang_code]["ai_experience_section"]["questions"]):
-        responses[f"ai_experience_{i+1}"] = st.radio(
+        selected_option = st.radio(
             question,
-            [1, 2, 3, 4, 5, 6, 7],
-            horizontal=True,
+            scale_options,
             key=f"ai_exp_{i+1}"
         )
+        # 提取數字值用於資料儲存 (1-7)
+        responses[f"ai_experience_{i+1}"] = int(selected_option.split(":")[0])
     
     # Section 5: Outcomes (Note: keeping as Section 5 as per original)
     st.subheader(questionnaire_data["sections"][lang_code]["outcomes"]["title"])
     for i, question in enumerate(questionnaire_data["sections"][lang_code]["outcomes"]["questions"]):
-        responses[f"outcomes_{i+1}"] = st.radio(
+        selected_option = st.radio(
             question,
-            [1, 2, 3, 4, 5, 6, 7],
-            horizontal=True,
+            scale_options,
             key=f"outcomes_{i+1}"
         )
+        # 提取數字值用於資料儲存 (1-7)
+        responses[f"outcomes_{i+1}"] = int(selected_option.split(":")[0])
     
     # Section 6: Future Outlook
     st.subheader(questionnaire_data["sections"][lang_code]["future"]["title"])
     for i, question in enumerate(questionnaire_data["sections"][lang_code]["future"]["questions"]):
-        responses[f"future_{i+1}"] = st.radio(
+        selected_option = st.radio(
             question,
-            [1, 2, 3, 4, 5, 6, 7],
-            horizontal=True,
+            scale_options,
             key=f"future_{i+1}"
         )
+        # 提取數字值用於資料儲存 (1-7)
+        responses[f"future_{i+1}"] = int(selected_option.split(":")[0])
 
     if st.button(ui_texts["survey_submit"][lang_code], key="submit_survey_final"):
         try:
