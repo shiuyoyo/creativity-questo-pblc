@@ -81,7 +81,7 @@ class LLM:
             
         # ✅ 加入錯誤處理的 LLM 初始化 - 使用選定的模型
         try:
-            st.info(f"🤖 Using model: {self.selected_model} (Cost-saving mode)")
+            st.info(f"🤖 Using model: {self.selected_model} ")
             
             LLM_Classifier = ChatOpenAI(
                 model=self.selected_model,
