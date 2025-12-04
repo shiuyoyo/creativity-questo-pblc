@@ -292,7 +292,7 @@ elif st.session_state.page == 4:
             client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
             try:
                 response = client.chat.completions.create(
-                    model="gpt-4o",
+                    model="gpt-3.5-turbo",  # ✅ 改用 gpt-3.5-turbo 而不是 gpt-4o
                     messages=[
                         {"role": "system", "content": ui_texts["gpt_system_prompt"][lang_code]},
                         {"role": "user", "content": msg}
