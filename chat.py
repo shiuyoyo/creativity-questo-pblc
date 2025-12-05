@@ -81,7 +81,7 @@ class LLM:
             
         # ✅ 加入錯誤處理的 LLM 初始化 - 使用選定的模型
         try:
-            st.info(f"🤖 Using model: {self.selected_model} ")
+            st.info(f"🤖 Using model: {self.selected_model} (Cost-saving mode)")
             
             LLM_Classifier = ChatOpenAI(
                 model=self.selected_model,
@@ -292,9 +292,41 @@ class LLM:
         QOutput = self._retry_api_call(classify_question)
         
         if QOutput is None:
-            # API 調用失敗的備用響應
-            output_dict['OUTPUT']['CLS'] = '3'
-            output_dict['OUTPUT']['GUIDE'] = '💡 小Q暫時無法服務，請稍後再試。如果持續發生問題，請聯繫系統管理員檢查 API 設定。\n\n您仍可以繼續使用其他功能，或在第4頁直接與 ChatGPT 對話。'
+            # ✅ API 調用失敗時的智能備用響應
+            output_dict['OUTPUT']['CLS'] = '2'  # 假設為活動相關問題
+            
+            # 提供基本的 SCAMPER 建議
+            scamper_elements = ['Substitute', 'Combine', 'Adapt', 'Modify', 'Put to other uses', 'Eliminate', 'Rearrange']
+            selected_element = random.choice(scamper_elements)
+            
+            fallback_suggestions = {
+                'Substitute': '🔄 **替代思考建議**: 考慮用不同的材料或功能來替代原有的毛巾用途。例如：能否用毛巾製作其他質地的物品？',
+                'Combine': '🤝 **結合思考建議**: 考慮將毛巾與其他物品或功能結合。例如：毛巾能與什麼其他飯店用品結合使用？',
+                'Adapt': '🔧 **適應思考建議**: 考慮如何調整毛巾的形狀、大小或用途。例如：如何讓毛巾適合不同客群的需求？',
+                'Modify': '⚡ **修改思考建議**: 考慮放大、縮小或改變毛巾的某些特性。例如：如何讓毛巾變得更有趣或實用？',
+                'Put to other uses': '🎯 **新用途建議**: 考慮毛巾的全新用途。例如：除了清潔，毛巾還能為客人提供什麼價值？',
+                'Eliminate': '❌ **簡化思考建議**: 考慮移除毛巾的某些元素或功能。例如：哪些部分是不必要的？',
+                'Rearrange': '🔀 **重組思考建議**: 考慮重新排列毛巾的使用順序或組織方式。例如：如何改變毛巾的使用流程？'
+            }
+            
+            suggestion = fallback_suggestions.get(selected_element, '請嘗試從不同角度思考這個問題。')
+            
+            output_dict['OUTPUT']['EVAL'] = f"""⚠️ **小Q目前離線中** - 但這裡有一個創意思考建議：
+
+{suggestion}
+
+**改進建議**: 請讓您的問題更具體化。例如：
+- 專注於特定的客群（商務旅客、病患家屬等）
+- 明確說明想要的物品類型
+- 考慮客人的具體需求和情境
+
+**建議的改寫問題**: "如何將廢棄毛巾轉化為對住院病患家屬有用的comfort item？"
+
+🔧 **技術提示**: 小Q的AI服務暫時無法使用，可能是API配置問題。您可以繼續進行活動，或前往第4頁使用ChatGPT。"""
+            
+            output_dict['OUTPUT']['NEWQ'] = f"針對{['商務旅客', '會議參與者', '病患親友', '觀光客'][random.randint(0,3)]}，如何運用{selected_element.lower()}的概念將廢棄毛巾轉化為令人愉悅的物品？"
+            output_dict['MISC']['SCAMPER_ELEMENT'] = selected_element
+            
             return output_dict
             
         # ✅ 增加使用計數
@@ -345,6 +377,29 @@ class LLM:
                 st.session_state.api_usage_today += 1
             else:
                 output_dict['OUTPUT']['EVAL'] = 'Service temporarily unavailable due to rate limits. Please try again later.'
+
+        # ✅ 新增：非問題處理（來自原始repository的改進）
+        elif QOutput.QType == 3:
+            if self.language == 'C':
+                non_question_message = """🤖 **小Q提示**: 您輸入的內容似乎不是一個問題。
+
+為了獲得更好的協助，請嘗試：
+📝 **提出具體問題**：例如「如何讓商務旅客更滿意？」
+🎯 **聚焦特定目標**：選擇一個客群進行深入思考
+💡 **尋求建議**：詢問改進創意的方法
+
+**範例問題**：「針對病患家屬，廢棄毛巾可以如何轉化為實用的物品？」"""
+            else:
+                non_question_message = """🤖 **Little Q Notice**: Your input doesn't seem to be a question.
+
+For better assistance, please try:
+📝 **Ask specific questions**: e.g., "How to better satisfy business travelers?"
+🎯 **Focus on specific targets**: Choose one customer group for deeper thinking
+💡 **Seek advice**: Ask for methods to improve creativity
+
+**Example question**: "For patient families, how can discarded towels be transformed into practical items?" """
+            
+            output_dict['OUTPUT']['GUIDE'] = non_question_message
         
         # 成本計算
         input_messages = [v for k, v in output_dict['INPUT'].items() if v]
