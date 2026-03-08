@@ -343,7 +343,7 @@ elif st.session_state.page == 6:
                 "1: 非常不同意",
                 "2: 不同意",
                 "3: 有點不同意", 
-                "4: 中立",
+                "4: 普通",
                 "5: 有點同意",
                 "6: 同意",
                 "7: 非常同意"
@@ -369,7 +369,7 @@ elif st.session_state.page == 6:
                         {
                             "text": "Major:",
                             "type": "radio",
-                            "options": ["Hospitality Management", "Tourism Management", "F&B Management", "Culinary Arts", "Other"],
+                            "options": ["College of Hospitality", "College of Tourism", "College of Culinary Arts", "College of International Studies", "Other"],
                             "key": "major"
                         },
                         {
@@ -409,7 +409,7 @@ elif st.session_state.page == 6:
                     ]
                 },
                 "outcomes": {
-                    "title": "Section 5: Project Outcomes & Reflection",
+                    "title": "Section 4: Project Outcomes & Reflection",
                     "questions": [
                         "Questo helped me generate a large number of questions regarding the problem.",
                         "I was able to come up with more solutions than usual with the help of Questo.",
@@ -423,7 +423,7 @@ elif st.session_state.page == 6:
                     ]
                 },
                 "future": {
-                    "title": "Section 6: Future Outlook",
+                    "title": "Section 5: Future Outlook",
                     "questions": [
                         "Assuming I have access to this AI tool, I intend to use it for future class assignments.",
                         "I would recommend this AI Questioning Support Tool to other hospitality students."
@@ -449,7 +449,7 @@ elif st.session_state.page == 6:
                         {
                             "text": "主修科系：",
                             "type": "radio",
-                            "options": ["餐旅管理", "觀光管理", "餐飲管理", "廚藝", "其他"],
+                            "options": ["餐旅學院", "觀光學院", "廚藝學院", "國際學院", "其他"],
                             "key": "major"
                         },
                         {
@@ -489,7 +489,7 @@ elif st.session_state.page == 6:
                     ]
                 },
                 "outcomes": {
-                    "title": "第五部分：成果與反思",
+                    "title": "第四部分：成果與反思",
                     "questions": [
                         "小Q幫助我針對問題產生了大量的提問（流暢力）。",
                         "在 小Q的協助下，我能比平常提出更多的解決方案。",
@@ -503,7 +503,7 @@ elif st.session_state.page == 6:
                     ]
                 },
                 "future": {
-                    "title": "第六部分：未來展望",
+                    "title": "第五部分：未來展望",
                     "questions": [
                         "假設我能使用小Q，我打算在未來的課堂作業中使用它。",
                         "我會向其他餐旅系學生推薦小Q。"
