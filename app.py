@@ -25,8 +25,8 @@ titles = {
 ui_texts = {
     # 第2頁 - 初步構想
     "idea_input_label": {
-        "E": "Your 3 ideas / 請輸入三個最具創意的想法",
-        "C": "請輸入三個最具創意的想法 / Your 3 ideas"
+        "E": "To win the competition, what are three of the most creative ideas you can think of?",
+        "C": "競賽奪冠：你能想出的三個最具創意的點子是什麼？"
     },
     "idea_warning": {
         "E": "⚠️ Please enter your ideas first!",
@@ -35,8 +35,11 @@ ui_texts = {
     
     # 第3頁 - 小Q對話
     "littleq_input_prompt": {
-        "E": "Enter your question for Little Q (type 'end' to finish)",
-        "C": "請輸入你想問小Q的問題（輸入 'end' 結束對話）"
+        "E": "Now, you can use our AI Questioning Assistant, called 'Questo', to refine your questioning technique and generate more effective questions.
+Before you begin, please spend at least 5 minutes using Questo to ask questions related to the challenge of using old hotel towels to delight guests. Instead of providing answers, Questo will offer suggestions and recommendations on how to improve your questions. This will help you learn how to ask better questions and explore different perspectives. You can engage with Questo for as long as you like. When you're ready, click 'Next' to continue. Remember, Questo is designed to help you enhance your questioning skills, which is crucial for creative problem-solving.",
+        "C": "現在，你可以使用我們名為 「Questo」 的 AI 提問助手，來磨練你的提問技巧並產生更有價值的問題。
+在開始之前，請至少花 5 分鐘 使用 Questo，針對**「如何利用舊飯店毛巾來驚艷顧客」**這個挑戰進行提問。Questo 不會直接給你答案，而是會針對如何改進你的提問方式提供建議與推薦。這將幫助你學習如何提問得更精確，並探索不同的觀點。
+你可以根據需求與 Questo 進行任何時長的互動。準備好後，請點擊「下一步」繼續。請記住，Questo 旨在幫助你提升提問技巧，而這正是創意解難（Creative Problem-solving）的關鍵。"
     },
     "littleq_submit_button": {
         "E": "Submit Question",
@@ -49,8 +52,8 @@ ui_texts = {
     
     # 第4頁 - ChatGPT對話
     "gpt_input_label": {
-        "E": "Enter your question for ChatGPT",
-        "C": "輸入你的問題給 ChatGPT"
+        "E": "To spark your imagination, start by asking ChatGPT some questions about the hotel towel challenge below. See what ideas and insights you can gain, then use that inspiration to propose three more creative ideas.",
+        "C": "為了激發你的想像力，請先針對下方的飯店毛巾挑戰向 ChatGPT 提出一些問題。看看你能獲得哪些靈感與洞察."
     },
     "gpt_submit_button": {
         "E": "Submit to ChatGPT",
