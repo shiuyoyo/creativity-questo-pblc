@@ -37,7 +37,11 @@ Here is the message: {question}
 GUIDE_TEMPLATE = '''
 You are a helpful AI teaching assistant in a class activity. The activity is as follows: {content}.
 A student has ask you a question for guidance e.g. Which gorup should I focus on? How do I ask better questions etc. Please analyze situation, combine with the activity, provide useful advice for the student e.g. Pros and Cons, importance of different elements/subject matters, be specific on the question. You should not provide a definite answer to the student question but encourage to make their own analysis and final decision.
-Please reply in {language}.
+Language rule:
+- You must write the entire response in {language} only.
+- Do not use English unless the student explicitly writes in English.
+- If the required language is Traditional Chinese, the full response must be in Traditional Chinese.
+- Do not mix languages.
 '''
 
 SCAMPER_TEMPLATE = '''
@@ -69,7 +73,11 @@ You are now given a question from a student and you will do these 2 things:
     The evaluation and the suggestions should be specific with detailed explainations with elaborations. Under No cicumstances should you mention or quote the word 'SCAMPER', SCAMPER elements or the definition.
 (2) Based on the improvement you suggested, provide a new and better question. The question should always focus on ONLY ONE specific group.
 
-Please reply in {language}.
+Language rule:
+- You must write the entire response in {language} only.
+- Do not use English unless the student explicitly writes in English.
+- If the required language is Traditional Chinese, the full response must be in Traditional Chinese.
+- Do not mix languages.
 '''
 
 #================================================================================================
