@@ -15,7 +15,7 @@ if "page" in query_params and query_params["page"].isdigit():
 titles = {
     1: {"E": "🏁 Event Challenge Description", "C": "🏁 活動挑戰說明"},
     2: {"E": "💡 Initial Idea Generation", "C": "💡 初步構想發想"},
-    3: {"E": "🧠 Ask AI Assistant – Little Q", "C": "🧠 與小Q AI 助教對話"},
+    3: {"E": "🧠 Ask AI Assistant – Little Q", "C": "🧠 與Questo AI 助教對話"},
     4: {"E": "💬 Chat with GPT", "C": "💬 與 ChatGPT 真實對話"},
     5: {"E": "📝 Submit Final Creative Ideas", "C": "📝 整合創意成果"},
     6: {"E": "🎯 Feedback Questionnaire", "C": "🎯 小Q體驗問卷調查"},
