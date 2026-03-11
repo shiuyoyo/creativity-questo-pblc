@@ -60,16 +60,15 @@ class LLM:
     def __init__(self):
         self.tknizer = tiktoken.encoding_for_model("gpt-3.5-turbo")  # 改用3.5的tokenizer
         
-        # ✅ 加入模型配置選項
+        # 模型配置選項
         self.model_config = {
-            "cheap": "gpt-3.5-turbo",  # 便宜選項
-            "free": "gpt-3.5-turbo",   # 免費額度選項  
-            "premium": "gpt-4o-mini"   # 高品質選項
+            "standard": "gpt-4o-mini",  # 標準選項
+            "premium": "gpt-4o"         # 高品質選項
         }
-        
-        # ✅ 根據環境變數或設定選擇模型
-        self.model_choice = os.getenv("QST_MODEL_TIER", "cheap")  # 預設使用便宜選項
-        self.selected_model = self.model_config.get(self.model_choice, "gpt-3.5-turbo")
+
+        # 根據環境變數或設定選擇模型，預設使用 gpt-4o-mini
+        self.model_choice = os.getenv("QST_MODEL_TIER", "standard")
+        self.selected_model = self.model_config.get(self.model_choice, "gpt-4o-mini")
         
         # ✅ 改進：嘗試從不同來源獲取 API Key
         api_key = self._get_api_key()
@@ -81,7 +80,7 @@ class LLM:
             
         # ✅ 加入錯誤處理的 LLM 初始化 - 使用選定的模型
         try:
-            st.info(f"🤖 Using model: {self.selected_model} (Cost-saving mode)")
+            st.info(f"🤖 Using model: {self.selected_model}")
             
             LLM_Classifier = ChatOpenAI(
                 model=self.selected_model,
@@ -231,32 +230,9 @@ class LLM:
     def Chat(self, input_question, language, activity):
         """✅ 改進：加入成本控制的聊天功能"""
         
-        # ✅ 加入成本控制檢查
         if 'api_usage_today' not in st.session_state:
             st.session_state.api_usage_today = 0
-        
-        # 每日使用限制（可調整）
-        DAILY_LIMIT = 50  # 每天最多50次API調用
-        
-        if st.session_state.api_usage_today >= DAILY_LIMIT:
-            return {
-                'INPUT': {'CLS': '', 'GUIDE': '', 'EVAL': ''},
-                'OUTPUT': {
-                    'CLS': '3',
-                    'GUIDE': f'今日API使用已達上限（{DAILY_LIMIT}次）。為了控制研究成本，請明天再繼續使用小Q，或可直接進入第4頁使用免費的ChatGPT。',
-                    'EVAL': '',
-                    'NEWQ': '',
-                },
-                'MISC': {
-                    'SCAMPER_ELEMENT': '',
-                    'QUESTION': input_question,
-                    'cost_input': 0,
-                    'cost_output': 0,
-                    'ntkn_input': 0,
-                    'ntkn_output': 0
-                }
-            }
-        
+
         # 檢查 API 是否可用
         if not hasattr(self, 'api_available') or not self.api_available:
             return {
@@ -407,8 +383,7 @@ For better assistance, please try:
         cost_dict = self.CalculateCost(input_messages, output_messages)
         output_dict['MISC'].update(cost_dict)
 
-        # ✅ 顯示使用狀態
-        remaining = DAILY_LIMIT - st.session_state.api_usage_today
-        st.sidebar.info(f"📊 今日剩餘: {remaining}/{DAILY_LIMIT} 次")
+        # 顯示使用狀態
+        st.sidebar.info(f"📊 今日已使用: {st.session_state.api_usage_today} 次")
 
         return output_dict
