@@ -291,12 +291,13 @@ elif st.session_state.page == 4:
         else:
             client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
             try:
+                history = [{"role": "system", "content": ui_texts["gpt_system_prompt"][lang_code]}]
+                for role, txt in st.session_state.gpt_chat:
+                    history.append({"role": "user" if role == "user" else "assistant", "content": txt})
+                history.append({"role": "user", "content": msg})
                 response = client.chat.completions.create(
-                    model="gpt-3.5-turbo",  # ✅ 改用 gpt-3.5-turbo 而不是 gpt-4o
-                    messages=[
-                        {"role": "system", "content": ui_texts["gpt_system_prompt"][lang_code]},
-                        {"role": "user", "content": msg}
-                    ]
+                    model="gpt-4o-mini",
+                    messages=history
                 )
                 reply = response.choices[0].message.content
                 st.session_state.gpt_chat.append(("user", msg))
