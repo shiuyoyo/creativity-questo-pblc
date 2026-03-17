@@ -3,6 +3,7 @@ import copy
 import random
 import time
 import streamlit as st
+import zh_prompts
 
 import tiktoken
 from pydantic import BaseModel, Field
@@ -15,7 +16,7 @@ import prompts
 
 LANGAUGE_DICT = {
     'E': 'english',
-    'C': 'traditional chinese'
+    'C': '繁體中文'
 }
 
 SCAMPER_DICT = {
@@ -26,6 +27,16 @@ SCAMPER_DICT = {
     'P' : 'Put to other uses',
     'E' : 'Eliminate',
     'R' : 'Re-arrange',
+}
+
+SCAMPER_DICT_ZH = {
+    'S': '替代',
+    'C': '結合',
+    'A': '調整',
+    'M': '放大／修改',
+    'P': '其他用途',
+    'E': '刪減',
+    'R': '重組',
 }
 
 CHAT_INFO_PLACEHOLDER = {
@@ -58,7 +69,7 @@ class SCAMPEROutput(BaseModel):
 
 class LLM:
     def __init__(self):
-        self.tknizer = tiktoken.encoding_for_model("gpt-3.5-turbo")  # 改用3.5的tokenizer
+        self.tknizer = tiktoken.encoding_for_model("gpt-4o")  # 改用3.5的tokenizer
         
         # 模型配置選項
         self.model_config = {
@@ -349,7 +360,7 @@ class LLM:
                 output_dict['INPUT']['EVAL'] = activity_message
                 output_dict['OUTPUT']['EVAL'] = output.Imprv
                 output_dict['OUTPUT']['NEWQ'] = output.NewQ
-                output_dict['MISC']['SCAMPER_ELEMENT'] = SCAMPER_DICT[element]
+                output_dict['MISC']['SCAMPER_ELEMENT'] = SCAMPER_DICT[element] if self.language == 'E' else SCAMPER_DICT_ZH[element]
                 st.session_state.api_usage_today += 1
             else:
                 output_dict['OUTPUT']['EVAL'] = 'Service temporarily unavailable due to rate limits. Please try again later.'
