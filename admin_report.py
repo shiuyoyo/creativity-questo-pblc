@@ -39,8 +39,7 @@ if st.button("📄 下載整合報表（PDF）"):
         pdf.set_font("Arial", "", 10)
         for col in df.columns:
             if col not in ["使用者編號", "時間戳記"]:
-                value = str(row.get(col, "")).replace("\n", "
-")
+                value = str(row.get(col, "")).replace("\n", " ")
                 pdf.multi_cell(0, 6, f"{col}: {value}")
         pdf.ln(5)
 

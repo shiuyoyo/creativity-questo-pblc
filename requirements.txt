@@ -1,14 +1,12 @@
 streamlit
 pandas
-fpdf
+fpdf2
 openpyxl
 gspread
 oauth2client
-streamlit
 tiktoken
-pydantic
+pydantic>=2
 langchain-openai
 langchain-core
 langchain
 openai
-pydantic>=2
