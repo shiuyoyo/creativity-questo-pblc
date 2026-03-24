@@ -12,3 +12,4 @@ langchain-core
 langchain
 openai
 pydantic>=2
+opencc-python-reimplemented
