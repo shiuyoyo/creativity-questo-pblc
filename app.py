@@ -259,11 +259,13 @@ elif st.session_state.page == 3:
         if submitted and question.strip() and question.lower() != "end":
             llm_response = st.session_state.llm.Chat(question, lang_code, st.session_state.activity)
             st.session_state.chat_history.append((question, llm_response))
-            st.rerun()  # ← 加入這行確保立即更新畫面
+
+            # ✅ 先寫入 Excel
             try:
                 df = pd.read_excel("Database.xlsx")
             except:
                 df = pd.DataFrame()
+
             new_row = {
                 "時間戳記": datetime.now().isoformat(),
                 "使用者編號": st.session_state.user_id,
@@ -277,6 +279,8 @@ elif st.session_state.page == 3:
             }
             df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
             df.to_excel("Database.xlsx", index=False)
+
+    st.rerun()  # ✅ 最後才 rerun
 
     # ✅ 修正：使用動態語言文字
     st.button(ui_texts["next_back_button"][lang_code], on_click=next_page)
