@@ -7,7 +7,19 @@ def write_to_google_sheet(row_data: dict):
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
-        creds_dict = json.loads(st.secrets["gcp_json"])
+        creds_dict = {
+            "type": "service_account",
+            "project_id": st.secrets["gcp_project_id"],
+            "private_key_id": st.secrets["gcp_private_key_id"],
+            "private_key": st.secrets["gcp_private_key"].replace("\\n", "\n"),
+            "client_email": st.secrets["gcp_client_email"],
+            "client_id": st.secrets["gcp_client_id"],
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": st.secrets["gcp_client_x509_cert_url"],
+        }
+
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
         client = gspread.authorize(creds)
 
