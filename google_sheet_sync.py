@@ -7,14 +7,12 @@ def write_to_google_sheet(row_data: dict):
     try:
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
-        # 從 Streamlit Secrets 讀取整個 JSON 字串
         creds_dict = json.loads(st.secrets["gcp_json"])
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
         client = gspread.authorize(creds)
 
         sheet = client.open("Creativity Records").sheet1
 
-        # 確保欄位順序一致
         existing_headers = sheet.row_values(1)
         if not existing_headers:
             sheet.insert_row(list(row_data.keys()), 1)
@@ -24,5 +22,5 @@ def write_to_google_sheet(row_data: dict):
         print("✅ Google Sheet 備份成功")
 
     except Exception as e:
-    print("❌ 寫入 Google Sheet 失敗：", e)
-    raise  # 加這行，讓錯誤往外拋
+        print("❌ 寫入 Google Sheet 失敗：", e)
+        raise
