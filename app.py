@@ -280,7 +280,7 @@ elif st.session_state.page == 3:
             df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
             df.to_excel("Database.xlsx", index=False)
 
-    st.rerun()  # ✅ 最後才 rerun
+            st.rerun()  # ✅ 最後才 rerun
 
     # ✅ 修正：使用動態語言文字
     st.button(ui_texts["next_back_button"][lang_code], on_click=next_page)
