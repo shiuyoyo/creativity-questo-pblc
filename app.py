@@ -604,6 +604,7 @@ elif st.session_state.page == 6:
         df = pd.concat([df, pd.DataFrame([final_row])], ignore_index=True)
         df.to_excel("Database.xlsx", index=False)
         st.success(ui_texts["survey_success"][lang_code])
+        st.write(st.secrets.get("test_key", "NOT FOUND"))
 
         # ✅ 寫入 Google Sheet（失敗時提示）
         try:
