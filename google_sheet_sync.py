@@ -24,4 +24,5 @@ def write_to_google_sheet(row_data: dict):
         print("✅ Google Sheet 備份成功")
 
     except Exception as e:
-        print("❌ 寫入 Google Sheet 失敗：", e)
+    print("❌ 寫入 Google Sheet 失敗：", e)
+    raise  # 加這行，讓錯誤往外拋
