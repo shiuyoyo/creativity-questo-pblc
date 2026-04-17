@@ -40,7 +40,7 @@ def write_to_google_sheet(row_data: dict):
         creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
         client = gspread.authorize(creds)
 
-        sheet = client.open("Creativity Records").sheet1
+        sheet = client.open("Creativity Records New").sheet1
 
         headers = sheet.row_values(1)
         if not headers:
