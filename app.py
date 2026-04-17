@@ -590,15 +590,32 @@ elif st.session_state.page == 6:
             "成本估算": st.session_state.get("total_cost", 0),
         }
 
-        # 小Q 對話
+        # ✅ 修正：小Q 對話固定欄位（最多 MAX_TURNS 輪）
+        MAX_TURNS = 15
+        for i in range(1, MAX_TURNS + 1):
+            final_row[f"小Q 問題{i}"] = ""
+            final_row[f"小Q 回覆{i}"] = ""
         for i, (q, r) in enumerate(st.session_state.get("chat_history", [])):
+            if i >= MAX_TURNS:
+                break
             final_row[f"小Q 問題{i+1}"] = q
             final_row[f"小Q 回覆{i+1}"] = r['OUTPUT']['GUIDE'] or r['OUTPUT']['EVAL']
 
-        # GPT 對話
-        gpt_interactions = [item for item in st.session_state.get("gpt_chat", []) if item[0] == "user"]
-        for i, (role, text) in enumerate(gpt_interactions):
-            final_row[f"GPT 問題{i+1}"] = text
+        # ✅ 修正：GPT 對話固定欄位，且補上 GPT 回覆
+        for i in range(1, MAX_TURNS + 1):
+            final_row[f"GPT 問題{i}"] = ""
+            final_row[f"GPT 回覆{i}"] = ""
+        gpt_chat = st.session_state.get("gpt_chat", [])
+        gpt_pairs = [
+            (gpt_chat[j][1], gpt_chat[j+1][1])
+            for j in range(0, len(gpt_chat) - 1, 2)
+            if gpt_chat[j][0] == "user" and gpt_chat[j+1][0] == "gpt"
+        ]
+        for i, (user_msg, gpt_msg) in enumerate(gpt_pairs):
+            if i >= MAX_TURNS:
+                break
+            final_row[f"GPT 問題{i+1}"] = user_msg
+            final_row[f"GPT 回覆{i+1}"] = gpt_msg  # ← 補上 GPT 回覆
 
         # ✅ 問卷結果
         final_row.update(responses)
