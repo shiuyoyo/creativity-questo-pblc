@@ -22,9 +22,7 @@ titles = {
     6: {"E": "🎯 Feedback Questionnaire", "C": "🎯 小Q體驗問卷調查"},
 }
 
-# ✅ 完整的語言文字字典
 ui_texts = {
-    # 第2頁 - 初步構想
     "idea_input_label": {
         "E": "To win the competition, what are three of the most creative ideas you can think of?",
         "C": "競賽奪冠：你能想出的三個最具創意的點子是什麼？"
@@ -33,8 +31,6 @@ ui_texts = {
         "E": "⚠️ Please enter your ideas first!",
         "C": "⚠️ 請先輸入構想內容！"
     },
-
-    # 第3頁 - 小Q對話
     "littleq_input_prompt": {
         "E": "Now, you can use our AI Questioning Assistant, called 'Questo', to refine your questioning technique and generate more effective questions.Before you begin, please spend at least 5 minutes using Questo to ask questions related to the challenge of using old hotel towels to delight guests. Instead of providing answers, Questo will offer suggestions and recommendations on how to improve your questions. This will help you learn how to ask better questions and explore different perspectives. You can engage with Questo for as long as you like. When you're ready, click 'Next' to continue. Remember, Questo is designed to help you enhance your questioning skills, which is crucial for creative problem-solving.",
         "C": "現在，你可以使用我們名為 「Questo」 的 AI 提問助手，來磨練你的提問技巧並產生更有價值的問題。在開始之前，請至少花 5 分鐘 使用 Questo，針對**「如何利用舊飯店毛巾來驚艷顧客」**這個挑戰進行提問。Questo 不會直接給你答案，而是會針對如何改進你的提問方式提供建議與推薦。這將幫助你學習如何提問得更精確，並探索不同的觀點。你可以根據需求與 Questo 進行任何時長的互動。準備好後，請點擊「下一步」繼續。請記住，Questo 旨在幫助你提升提問技巧，而這正是創意解難（Creative Problem-solving）的關鍵。"
@@ -47,8 +43,6 @@ ui_texts = {
         "E": "⚠️ Little Q has no suggestions at the moment",
         "C": "⚠️ 小Q暫時無提供建議"
     },
-
-    # 第4頁 - ChatGPT對話
     "gpt_input_label": {
         "E": "To spark your imagination, start by asking ChatGPT some questions about the hotel towel challenge below. See what ideas and insights you can gain, then use that inspiration to propose three more creative ideas.",
         "C": "為了激發你的想像力，請先針對下方的飯店毛巾挑戰向 ChatGPT 提出一些問題。看看你能獲得哪些靈感與洞察."
@@ -69,8 +63,6 @@ ui_texts = {
         "E": "You are an AI teaching assistant skilled in guiding creative thinking",
         "C": "你是一位擅長引導創意思考的 AI 助教"
     },
-
-    # 第5頁 - 最終創意
     "final_idea_prompt": {
         "E": "Based on your experience and exploration, what are the three most creative ideas you can come up with?",
         "C": "根據您的體驗與探索，您能想到的三個最具創意的想法是什麼？"
@@ -83,8 +75,6 @@ ui_texts = {
         "E": "✅ Final ideas saved! Please continue to complete the questionnaire",
         "C": "✅ 最終創意已儲存！請繼續完成問卷"
     },
-
-    # 第6頁 - 問卷
     "survey_submit": {
         "E": "📩 Submit Questionnaire",
         "C": "📩 送出問卷"
@@ -97,8 +87,6 @@ ui_texts = {
         "E": "⚠️ Google Sheet backup failed: {error}",
         "C": "⚠️ Google Sheet 備份失敗：{error}"
     },
-
-    # 第7頁 - 教師報表
     "admin_title": {
         "E": "🔒 Teacher Report Dashboard",
         "C": "🔒 教師後台報表"
@@ -135,24 +123,10 @@ ui_texts = {
         "E": "📥 Click to Download PDF",
         "C": "📥 點我下載 PDF"
     },
-
-    # 通用按鈕
-    "next_button": {
-        "E": "Next",
-        "C": "下一頁"
-    },
-    "back_button": {
-        "E": "Back",
-        "C": "上一頁"
-    },
-    "next_back_button": {
-        "E": "Next / 下一頁",
-        "C": "下一頁 / Next"
-    },
-    "back_next_button": {
-        "E": "Back / 上一頁",
-        "C": "上一頁 / Back"
-    }
+    "next_button": {"E": "Next", "C": "下一頁"},
+    "back_button": {"E": "Back", "C": "上一頁"},
+    "next_back_button": {"E": "Next / 下一頁", "C": "下一頁 / Next"},
+    "back_next_button": {"E": "Back / 上一頁", "C": "上一頁 / Back"}
 }
 
 questions_text = {
@@ -180,30 +154,33 @@ questions_text = {
     }
 }
 
+# ✅ 固定欄位結構（所有人共用，確保 Excel 欄位一致）
+MAX_TURNS = 15
+FIXED_COLUMNS = (
+    ["時間戳記", "使用者編號", "語言", "初步構想", "最終構想"] +
+    [col for i in range(1, MAX_TURNS + 1) for col in [f"小Q 問題{i}", f"小Q 回覆{i}"]] +
+    [col for i in range(1, MAX_TURNS + 1) for col in [f"GPT 問題{i}", f"GPT 回覆{i}"]] +
+    ["gender", "year_study", "major", "ai_experience"] +
+    [f"problem_solving_{i}" for i in range(1, 8)] +
+    [f"ai_experience_{i}" for i in range(1, 12)] +
+    [f"outcomes_{i}" for i in range(1, 10)] +
+    [f"future_{i}" for i in range(1, 3)]
+)
+
 if 'page' not in st.session_state:
     st.session_state.page = 1
-
 if 'user_id' not in st.session_state:
     st.session_state.user_id = f"User_{datetime.now().strftime('%H%M%S')}"
-
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
-
 if 'gpt_chat' not in st.session_state:
     st.session_state.gpt_chat = []
-
 if 'llm' not in st.session_state:
     st.session_state.llm = LLM()
-
 if 'language' not in st.session_state:
     st.session_state.language = "English"
-
 if 'maintenance_mode' not in st.session_state:
-    st.session_state.maintenance_mode = False  # ✅ 加入維護模式開關
-
-# ✅ 初始化累積成本
-if 'total_cost' not in st.session_state:
-    st.session_state.total_cost = 0
+    st.session_state.maintenance_mode = False
 
 st.markdown(
     "<div style='text-align: right; font-size: 0.9em;'>🔐 <a href='?page=7'>教師報表頁</a></div>",
@@ -226,21 +203,23 @@ def next_page():
 def prev_page():
     st.session_state.page -= 1
 
+# =========================================================
+# 第 1 頁：活動挑戰說明
+# =========================================================
 if st.session_state.page == 1:
     show_challenge_page(lang_code, next_page)
     st.button("下一頁 / Next", on_click=next_page)
 
+# =========================================================
+# 第 2 頁：初步構想
+# =========================================================
 elif st.session_state.page == 2:
     st.title(titles[st.session_state.page][lang_code])
-
     if 'activity_warning' not in st.session_state:
         st.session_state.activity_warning = False
-
     activity = st.text_area(ui_texts["idea_input_label"][lang_code], value=st.session_state.get("activity", ""))
-
     if activity.strip():
         st.session_state.activity_warning = False
-
     if st.button(ui_texts["next_back_button"][lang_code]):
         if activity.strip() == "":
             st.session_state.activity_warning = True
@@ -248,44 +227,54 @@ elif st.session_state.page == 2:
             st.session_state.activity = activity
             st.session_state.llm.setup_language_and_activity(lang_code, activity)
             next_page()
-
     if st.session_state.activity_warning:
         st.warning(ui_texts["idea_warning"][lang_code])
-
     st.button(ui_texts["back_next_button"][lang_code], on_click=prev_page)
 
+# =========================================================
+# 第 3 頁：小Q 對話
+# =========================================================
 elif st.session_state.page == 3:
     st.title(titles[st.session_state.page][lang_code])
-
     for q, r in st.session_state.chat_history:
         with st.chat_message("user"):
             st.write(q)
         with st.chat_message("assistant"):
             reply = r['OUTPUT']['GUIDE'] or r['OUTPUT']['EVAL']
             st.write(reply if reply.strip() else ui_texts["littleq_no_response"][lang_code])
-
     with st.form("question_form"):
         question = st.text_input(ui_texts["littleq_input_prompt"][lang_code], key="input_q")
         submitted = st.form_submit_button(f"{ui_texts['littleq_submit_button'][lang_code]} / Submit")
-
-    # ✅ 只存入 session_state，不寫 Excel
     if submitted and question.strip() and question.lower() != "end":
         llm_response = st.session_state.llm.Chat(question, lang_code, st.session_state.activity)
         st.session_state.chat_history.append((question, llm_response))
-
-        # 累積成本
-        st.session_state.total_cost += llm_response['MISC']['cost_input'] + llm_response['MISC']['cost_output']
-
         st.rerun()
-
+        try:
+            df = pd.read_excel("Database.xlsx")
+        except:
+            df = pd.DataFrame()
+        new_row = {
+            "時間戳記": datetime.now().isoformat(),
+            "使用者編號": st.session_state.user_id,
+            "語言": st.session_state.language,
+            "原始問題": question,
+            "問題類型": llm_response['OUTPUT']['CLS'],
+            "AI 回饋": llm_response['OUTPUT']['GUIDE'] or llm_response['OUTPUT']['EVAL'],
+            "改寫建議": llm_response['OUTPUT']['NEWQ'],
+            "SCAMPER 類型": llm_response['MISC']['SCAMPER_ELEMENT'],
+            "成本估算": llm_response['MISC']['cost_input'] + llm_response['MISC']['cost_output']
+        }
+        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+        df.to_excel("Database.xlsx", index=False)
     st.button(ui_texts["next_back_button"][lang_code], on_click=next_page)
     st.button(ui_texts["back_next_button"][lang_code], on_click=prev_page)
 
+# =========================================================
+# 第 4 頁：ChatGPT 對話
+# =========================================================
 elif st.session_state.page == 4:
     st.title(titles[st.session_state.page][lang_code])
-
     msg = st.text_input(ui_texts["gpt_input_label"][lang_code], key="gpt_input")
-
     if st.button(ui_texts["gpt_submit_button"][lang_code]):
         if "OPENAI_API_KEY" not in st.secrets:
             st.error(ui_texts["gpt_api_error"][lang_code])
@@ -296,7 +285,6 @@ elif st.session_state.page == 4:
                 for role, txt in st.session_state.gpt_chat:
                     history.append({"role": "user" if role == "user" else "assistant", "content": txt})
                 history.append({"role": "user", "content": msg})
-
                 response = client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=history
@@ -306,30 +294,28 @@ elif st.session_state.page == 4:
                 st.session_state.gpt_chat.append(("gpt", reply))
             except Exception as e:
                 st.error(ui_texts["gpt_response_error"][lang_code].format(error=e))
-
     for role, txt in st.session_state.gpt_chat:
         with st.chat_message("user" if role == "user" else "assistant"):
             st.write(txt)
-
     st.button(ui_texts["next_back_button"][lang_code], on_click=next_page)
     st.button(ui_texts["back_next_button"][lang_code], on_click=prev_page)
 
-# 第 5 頁：最終創意發想（不寫入 Excel，只存入 session_state）
+# =========================================================
+# 第 5 頁：最終創意
+# =========================================================
 elif st.session_state.page == 5:
     st.title(titles[st.session_state.page][lang_code])
-
     final_ideas = st.text_area(ui_texts["final_idea_prompt"][lang_code])
-
     if st.button(f"{ui_texts['final_idea_submit'][lang_code]} / Submit Final Ideas", key="submit_final_idea"):
         st.session_state.final_idea = final_ideas
         st.success(ui_texts["final_idea_success"][lang_code])
-
     st.button(ui_texts["back_next_button"][lang_code], on_click=prev_page, key="back_from_final")
     st.button(ui_texts["next_back_button"][lang_code], on_click=next_page)
 
-# 第 6 頁：體驗問卷 + 資料整合寫入
+# =========================================================
+# 第 6 頁：問卷 + 整合寫入
+# =========================================================
 elif st.session_state.page == 6:
-    # ✅ 完整的7分量表問卷
     questionnaire_data = {
         "title": {
             "E": "🎯 Research Questionnaire",
@@ -360,30 +346,10 @@ elif st.session_state.page == 6:
                 "demographics": {
                     "title": "Section 1: Demographics",
                     "questions": [
-                        {
-                            "text": "Gender:",
-                            "type": "radio",
-                            "options": ["Male", "Female", "Prefer not to say"],
-                            "key": "gender"
-                        },
-                        {
-                            "text": "Year of Study:",
-                            "type": "radio",
-                            "options": ["2nd Year", "3rd Year", "4th Year", "Graduate"],
-                            "key": "year_study"
-                        },
-                        {
-                            "text": "Major:",
-                            "type": "radio",
-                            "options": ["College of Hospitality", "College of Tourism", "College of Culinary Arts", "College of International Studies", "Other"],
-                            "key": "major"
-                        },
-                        {
-                            "text": "Prior Experience with Generative AI:",
-                            "type": "radio",
-                            "options": ["Never used", "Novice", "Intermediate", "Advanced"],
-                            "key": "ai_experience"
-                        }
+                        {"text": "Gender:", "type": "radio", "options": ["Male", "Female", "Prefer not to say"], "key": "gender"},
+                        {"text": "Year of Study:", "type": "radio", "options": ["2nd Year", "3rd Year", "4th Year", "Graduate"], "key": "year_study"},
+                        {"text": "Major:", "type": "radio", "options": ["College of Hospitality", "College of Tourism", "College of Culinary Arts", "College of International Studies", "Other"], "key": "major"},
+                        {"text": "Prior Experience with Generative AI:", "type": "radio", "options": ["Never used", "Novice", "Intermediate", "Advanced"], "key": "ai_experience"}
                     ]
                 },
                 "problem_solving": {
@@ -440,30 +406,10 @@ elif st.session_state.page == 6:
                 "demographics": {
                     "title": "第一部分：基本資料",
                     "questions": [
-                        {
-                            "text": "生理性別：",
-                            "type": "radio",
-                            "options": ["男", "女", "不願透露"],
-                            "key": "gender"
-                        },
-                        {
-                            "text": "年級：",
-                            "type": "radio",
-                            "options": ["大二", "大三", "大四", "研究所"],
-                            "key": "year_study"
-                        },
-                        {
-                            "text": "主修科系：",
-                            "type": "radio",
-                            "options": ["餐旅學院", "觀光學院", "廚藝學院", "國際學院", "其他"],
-                            "key": "major"
-                        },
-                        {
-                            "text": "生成式 AI (如 ChatGPT) 使用經驗：",
-                            "type": "radio",
-                            "options": ["從未用過", "初學者 (偶爾嘗試)", "中等程度 (曾用於作業或日常事務)", "進階使用者 (經常使用並熟悉提示詞技巧)"],
-                            "key": "ai_experience"
-                        }
+                        {"text": "生理性別：", "type": "radio", "options": ["男", "女", "不願透露"], "key": "gender"},
+                        {"text": "年級：", "type": "radio", "options": ["大二", "大三", "大四", "研究所"], "key": "year_study"},
+                        {"text": "主修科系：", "type": "radio", "options": ["餐旅學院", "觀光學院", "廚藝學院", "國際學院", "其他"], "key": "major"},
+                        {"text": "生成式 AI (如 ChatGPT) 使用經驗：", "type": "radio", "options": ["從未用過", "初學者 (偶爾嘗試)", "中等程度 (曾用於作業或日常事務)", "進階使用者 (經常使用並熟悉提示詞技巧)"], "key": "ai_experience"}
                     ]
                 },
                 "problem_solving": {
@@ -525,105 +471,78 @@ elif st.session_state.page == 6:
     responses = {}
     scale_options = questionnaire_data["scale_options"][lang_code]
 
-    # Section 1: Demographics
     st.subheader(questionnaire_data["sections"][lang_code]["demographics"]["title"])
     for q_data in questionnaire_data["sections"][lang_code]["demographics"]["questions"]:
-        responses[q_data["key"]] = st.radio(
-            q_data["text"],
-            q_data["options"],
-            key=f"demo_{q_data['key']}"
-        )
+        responses[q_data["key"]] = st.radio(q_data["text"], q_data["options"], key=f"demo_{q_data['key']}")
 
-    # Section 2: Problem-Solving Style
     st.subheader(questionnaire_data["sections"][lang_code]["problem_solving"]["title"])
     for i, question in enumerate(questionnaire_data["sections"][lang_code]["problem_solving"]["questions"]):
-        selected_option = st.radio(
-            question,
-            scale_options,
-            key=f"ps_{i+1}"
-        )
+        selected_option = st.radio(question, scale_options, key=f"ps_{i+1}")
         responses[f"problem_solving_{i+1}"] = int(selected_option.split(":")[0])
 
-    # Section 3: AI Experience
     st.subheader(questionnaire_data["sections"][lang_code]["ai_experience_section"]["title"])
     for i, question in enumerate(questionnaire_data["sections"][lang_code]["ai_experience_section"]["questions"]):
-        selected_option = st.radio(
-            question,
-            scale_options,
-            key=f"ai_exp_{i+1}"
-        )
+        selected_option = st.radio(question, scale_options, key=f"ai_exp_{i+1}")
         responses[f"ai_experience_{i+1}"] = int(selected_option.split(":")[0])
 
-    # Section 4: Outcomes
     st.subheader(questionnaire_data["sections"][lang_code]["outcomes"]["title"])
     for i, question in enumerate(questionnaire_data["sections"][lang_code]["outcomes"]["questions"]):
-        selected_option = st.radio(
-            question,
-            scale_options,
-            key=f"outcomes_{i+1}"
-        )
+        selected_option = st.radio(question, scale_options, key=f"outcomes_{i+1}")
         responses[f"outcomes_{i+1}"] = int(selected_option.split(":")[0])
 
-    # Section 5: Future Outlook
     st.subheader(questionnaire_data["sections"][lang_code]["future"]["title"])
     for i, question in enumerate(questionnaire_data["sections"][lang_code]["future"]["questions"]):
-        selected_option = st.radio(
-            question,
-            scale_options,
-            key=f"future_{i+1}"
-        )
+        selected_option = st.radio(question, scale_options, key=f"future_{i+1}")
         responses[f"future_{i+1}"] = int(selected_option.split(":")[0])
 
     if st.button(ui_texts["survey_submit"][lang_code], key="submit_survey_final"):
-        try:
-            df = pd.read_excel("Database.xlsx")
-        except:
-            df = pd.DataFrame()
 
-        # ✅ 整合所有資料一次性寫入（含小Q成本）
-        final_row = {
-            "時間戳記": datetime.now().isoformat(),
-            "使用者編號": st.session_state.user_id,
-            "語言": st.session_state.language,
-            "初步構想": st.session_state.get("activity", ""),
-            "最終構想": st.session_state.get("final_idea", ""),
-            "成本估算": st.session_state.get("total_cost", 0),
-        }
+        # ✅ 建立本筆資料，先全部填空字串
+        final_row = {col: "" for col in FIXED_COLUMNS}
 
-        # ✅ 修正：小Q 對話固定欄位（最多 MAX_TURNS 輪）
-        MAX_TURNS = 15
-        for i in range(1, MAX_TURNS + 1):
-            final_row[f"小Q 問題{i}"] = ""
-            final_row[f"小Q 回覆{i}"] = ""
+        # 基本資料
+        final_row["時間戳記"] = datetime.now().isoformat()
+        final_row["使用者編號"] = st.session_state.user_id
+        final_row["語言"] = st.session_state.language
+        final_row["初步構想"] = st.session_state.get("activity", "")
+        final_row["最終構想"] = st.session_state.get("final_idea", "")
+
+        # ✅ 小Q 對話（最多 MAX_TURNS 輪）
         for i, (q, r) in enumerate(st.session_state.get("chat_history", [])):
             if i >= MAX_TURNS:
                 break
             final_row[f"小Q 問題{i+1}"] = q
             final_row[f"小Q 回覆{i+1}"] = r['OUTPUT']['GUIDE'] or r['OUTPUT']['EVAL']
 
-        # ✅ 修正：GPT 對話固定欄位，且補上 GPT 回覆
-        for i in range(1, MAX_TURNS + 1):
-            final_row[f"GPT 問題{i}"] = ""
-            final_row[f"GPT 回覆{i}"] = ""
+        # ✅ GPT 對話（問題 + 回覆都存，最多 MAX_TURNS 輪）
         gpt_chat = st.session_state.get("gpt_chat", [])
         gpt_pairs = [
-            (gpt_chat[j][1], gpt_chat[j+1][1])
+            (gpt_chat[j][1], gpt_chat[j + 1][1])
             for j in range(0, len(gpt_chat) - 1, 2)
-            if gpt_chat[j][0] == "user" and gpt_chat[j+1][0] == "gpt"
+            if gpt_chat[j][0] == "user" and gpt_chat[j + 1][0] == "gpt"
         ]
         for i, (user_msg, gpt_msg) in enumerate(gpt_pairs):
             if i >= MAX_TURNS:
                 break
             final_row[f"GPT 問題{i+1}"] = user_msg
-            final_row[f"GPT 回覆{i+1}"] = gpt_msg  # ← 補上 GPT 回覆
+            final_row[f"GPT 回覆{i+1}"] = gpt_msg
 
-        # ✅ 問卷結果
+        # ✅ 問卷答案
         final_row.update(responses)
 
-        # ✅ 寫入本地 Excel
-        df = pd.concat([df, pd.DataFrame([final_row])], ignore_index=True)
-        df.to_excel("Database.xlsx", index=False)
+        # ✅ 讀入舊 Excel，強制套用固定欄位結構後寫入
+        try:
+            df = pd.read_excel("Database.xlsx")
+            for col in FIXED_COLUMNS:
+                if col not in df.columns:
+                    df[col] = ""
+            df = df[FIXED_COLUMNS]
+        except:
+            df = pd.DataFrame(columns=FIXED_COLUMNS)
 
+        new_df = pd.DataFrame([{col: final_row.get(col, "") for col in FIXED_COLUMNS}])
+        df = pd.concat([df, new_df], ignore_index=True)
+        df.to_excel("Database.xlsx", index=False)
         st.success(ui_texts["survey_success"][lang_code])
 
         # ✅ 寫入 Google Sheet（失敗時提示）
@@ -633,45 +552,39 @@ elif st.session_state.page == 6:
         except Exception as e:
             st.warning(ui_texts["survey_backup_warning"][lang_code].format(error=e))
 
-# 第 7 頁：教師報表頁
+# =========================================================
+# 第 7 頁：教師報表
+# =========================================================
 elif st.session_state.page == 7:
     st.title(ui_texts["admin_title"][lang_code])
-
     PASSWORD = "!@#$123456"
     pw = st.text_input(ui_texts["admin_password_prompt"][lang_code], type="password", key="admin_pw")
-
     if pw != PASSWORD:
         st.warning(ui_texts["admin_password_warning"][lang_code])
         st.stop()
-
     st.success(ui_texts["admin_login_success"][lang_code])
-
     try:
         df = pd.read_excel("Database.xlsx")
     except:
         st.error(ui_texts["admin_no_data_error"][lang_code])
         st.stop()
-
     if df.empty:
         st.warning(ui_texts["admin_no_records"][lang_code])
     else:
         st.dataframe(df)
-
-        # ✅ 提供 Excel 匯出
-        st.download_button(ui_texts["admin_export_excel"][lang_code], data=open("Database.xlsx", "rb").read(), file_name="Database.xlsx")
-
-        # ✅ 匯出 PDF
+        st.download_button(
+            ui_texts["admin_export_excel"][lang_code],
+            data=open("Database.xlsx", "rb").read(),
+            file_name="Database.xlsx"
+        )
         from io import BytesIO
         from fpdf import FPDF
-        from datetime import datetime
-
         if st.button(ui_texts["admin_export_pdf"][lang_code], key="dl_pdf"):
             pdf = FPDF()
             pdf.add_page()
             pdf.set_font("Arial", size=12)
             pdf.cell(200, 10, txt="Creativity Activity Summary Report", ln=True, align="C")
             pdf.ln(10)
-
             for idx, row in df.iterrows():
                 pdf.set_font("Arial", "B", 11)
                 pdf.cell(200, 8, f"User ID: {row.get('使用者編號', 'N/A')} | Time: {row.get('時間戳記', '')}", ln=True)
@@ -681,9 +594,11 @@ elif st.session_state.page == 7:
                         value = str(row.get(col, "")).replace("\n", "\n")
                         pdf.multi_cell(0, 6, f"{col}: {value}")
                 pdf.ln(5)
-
             buffer = BytesIO()
             pdf.output(buffer)
             pdf_bytes = buffer.getvalue()
-
-            st.download_button(ui_texts["admin_download_pdf"][lang_code], data=pdf_bytes, file_name=f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")
+            st.download_button(
+                ui_texts["admin_download_pdf"][lang_code],
+                data=pdf_bytes,
+                file_name=f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+            )
