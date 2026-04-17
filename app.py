@@ -28,14 +28,14 @@ ui_texts = {
     },
     "idea_warning": {"E": "⚠️ Please enter your ideas first!", "C": "⚠️ 請先輸入構想內容！"},
     "littleq_input_prompt": {
-        "E": "Now, you can use our AI Questioning Assistant, called 'Questo', to refine your questioning technique and generate more effective questions.Before you begin, please spend at least 5 minutes using Questo to ask questions related to the challenge of using old hotel towels to delight guests. Instead of providing answers, Questo will offer suggestions and recommendations on how to improve your questions. This will help you learn how to ask better questions and explore different perspectives. You can engage with Questo for as long as you like. When you're ready, click 'Next' to continue. Remember, Questo is designed to help you enhance your questioning skills, which is crucial for creative problem-solving.",
-        "C": "現在，你可以使用我們名為 「Questo」 的 AI 提問助手，來磨練你的提問技巧並產生更有價值的問題。在開始之前，請至少花 5 分鐘 使用 Questo，針對**「如何利用舊飯店毛巾來驚艷顧客」**這個挑戰進行提問。Questo 不會直接給你答案，而是會針對如何改進你的提問方式提供建議與推薦。這將幫助你學習如何提問得更精確，並探索不同的觀點。你可以根據需求與 Questo 進行任何時長的互動。準備好後，請點擊「下一步」繼續。請記住，Questo 旨在幫助你提升提問技巧，而這正是創意解難（Creative Problem-solving）的關鍵。"
+        "E": "Now, you can use our AI Questioning Assistant, called 'Questo', to refine your questioning technique and generate more effective questions. Before you begin, please spend at least 5 minutes using Questo to ask questions related to the challenge of using old hotel towels to delight guests. Instead of providing answers, Questo will offer suggestions and recommendations on how to improve your questions. This will help you learn how to ask better questions and explore different perspectives. You can engage with Questo for as long as you like. When you're ready, click 'Next' to continue. Remember, Questo is designed to help you enhance your questioning skills, which is crucial for creative problem-solving.",
+        "C": "現在，你可以使用我們名為 「Questo」 的 AI 提問助手，來磨練你的提問技巧並產生更有價值的問題。在開始之前，請至少花 5 分鐘 使用 Questo，針對「如何利用舊飯店毛巾來驚艷顧客」這個挑戰進行提問。Questo 不會直接給你答案，而是會針對如何改進你的提問方式提供建議與推薦。這將幫助你學習如何提問得更精確，並探索不同的觀點。你可以根據需求與 Questo 進行任何時長的互動。準備好後，請點擊「下一步」繼續。請記住，Questo 旨在幫助你提升提問技巧，而這正是創意解難（Creative Problem-solving）的關鍵。"
     },
     "littleq_submit_button": {"E": "Submit Question", "C": "送出問題"},
     "littleq_no_response": {"E": "⚠️ Little Q has no suggestions at the moment", "C": "⚠️ 小Q暫時無提供建議"},
     "gpt_input_label": {
         "E": "To spark your imagination, start by asking ChatGPT some questions about the hotel towel challenge below. See what ideas and insights you can gain, then use that inspiration to propose three more creative ideas.",
-        "C": "為了激發你的想像力，請先針對下方的飯店毛巾挑戰向 ChatGPT 提出一些問題。看看你能獲得哪些靈感與洞察."
+        "C": "為了激發你的想像力，請先針對下方的飯店毛巾挑戰向 ChatGPT 提出一些問題。看看你能獲得哪些靈感與洞察。"
     },
     "gpt_submit_button": {"E": "Submit to ChatGPT", "C": "送出給 ChatGPT"},
     "gpt_api_error": {"E": "⚠️ Please set OPENAI_API_KEY in Streamlit Secrets", "C": "⚠️ 請在 Streamlit Secrets 設定 OPENAI_API_KEY"},
@@ -63,7 +63,7 @@ ui_texts = {
     "back_next_button": {"E": "Back / 上一頁", "C": "上一頁 / Back"}
 }
 
-# ✅ 固定欄位（questo 版：有小Q + GPT）
+# ✅ 固定欄位：小Q 1~15問答 + GPT 1~15問答，欄位結構永遠一致
 MAX_TURNS = 15
 FIXED_COLUMNS = (
     ["時間戳記", "使用者編號", "語言", "初步構想", "最終構想"] +
@@ -111,7 +111,7 @@ def prev_page():
     st.session_state.page -= 1
 
 # =========================================================
-# 第 1 頁
+# 第 1 頁：活動說明
 # =========================================================
 if st.session_state.page == 1:
     show_challenge_page(lang_code, next_page)
@@ -140,6 +140,8 @@ elif st.session_state.page == 2:
 
 # =========================================================
 # 第 3 頁：小Q 對話
+# ✅ 修正：st.rerun() 後面不放任何 code，chat_history 存 session_state
+#    真正寫入 Excel 統一在第 6 頁問卷送出時處理
 # =========================================================
 elif st.session_state.page == 3:
     st.title(titles[st.session_state.page][lang_code])
@@ -156,23 +158,6 @@ elif st.session_state.page == 3:
         llm_response = st.session_state.llm.Chat(question, lang_code, st.session_state.activity)
         st.session_state.chat_history.append((question, llm_response))
         st.rerun()
-        try:
-            df = pd.read_excel("Database.xlsx")
-        except:
-            df = pd.DataFrame()
-        new_row = {
-            "時間戳記": datetime.now().isoformat(),
-            "使用者編號": st.session_state.user_id,
-            "語言": st.session_state.language,
-            "原始問題": question,
-            "問題類型": llm_response['OUTPUT']['CLS'],
-            "AI 回饋": llm_response['OUTPUT']['GUIDE'] or llm_response['OUTPUT']['EVAL'],
-            "改寫建議": llm_response['OUTPUT']['NEWQ'],
-            "SCAMPER 類型": llm_response['MISC']['SCAMPER_ELEMENT'],
-            "成本估算": llm_response['MISC']['cost_input'] + llm_response['MISC']['cost_output']
-        }
-        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-        df.to_excel("Database.xlsx", index=False)
     st.button(ui_texts["next_back_button"][lang_code], on_click=next_page)
     st.button(ui_texts["back_next_button"][lang_code], on_click=prev_page)
 
@@ -312,12 +297,12 @@ elif st.session_state.page == 6:
                 "ai_experience_section": {
                     "title": "第三部分：您使用 AI 工具的經驗",
                     "questions": [
-                        "使用 小Q改善了我解決個案研究的表現。",
-                        "這個 小Q讓我能比自己單獨作業時更快擬定問題。",
+                        "使用小Q改善了我解決個案研究的表現。",
+                        "這個小Q讓我能比自己單獨作業時更快擬定問題。",
                         "我發現小Q對於產生「更多樣化」的問題很有用。",
                         "使用小Q讓我更容易理解核心問題所在。",
                         "整體而言，我覺得小Q對我的學習過程很有用。",
-                        "我與 小Q的互動過程是清晰易懂的。",
+                        "我與小Q的互動過程是清晰易懂的。",
                         "我很容易就能熟練地使用小Q。",
                         "餐旅業的科技發展相當迅速。為了證明您有詳閱這些敘述，請忽略量表選項，直接在本題選擇「普通」(4)。",
                         "我覺得小Q很容易互動（例如：聊天介面很直觀）。",
@@ -329,7 +314,7 @@ elif st.session_state.page == 6:
                     "title": "第四部分：成果與反思",
                     "questions": [
                         "小Q幫助我針對問題產生了大量的提問（流暢力）。",
-                        "在 小Q的協助下，我能比平常提出更多的解決方案。",
+                        "在小Q的協助下，我能比平常提出更多的解決方案。",
                         "小Q幫助我從不同的角度或觀點來看待問題（變通力）。",
                         "小Q的建議幫助我打破了最初的既定假設或固著觀點。",
                         "為了驗證我們資料的品質，請在本題直接選擇「非常同意」(7)。",
@@ -380,22 +365,25 @@ elif st.session_state.page == 6:
         responses[f"future_{i+1}"] = int(selected_option.split(":")[0])
 
     if st.button(ui_texts["survey_submit"][lang_code], key="submit_survey_final"):
-        # ✅ 建立本筆資料，先全部填空字串
+
+        # ✅ Step1: 先把所有欄位填空字串，確保 1~15 全部存在
         final_row = {col: "" for col in FIXED_COLUMNS}
+
+        # ✅ Step2: 填入基本資料
         final_row["時間戳記"] = datetime.now().isoformat()
         final_row["使用者編號"] = st.session_state.user_id
         final_row["語言"] = st.session_state.language
         final_row["初步構想"] = st.session_state.get("activity", "")
         final_row["最終構想"] = st.session_state.get("final_idea", "")
 
-        # ✅ 小Q 對話（最多 MAX_TURNS 輪）
+        # ✅ Step3: 小Q 對話，逐輪填入（最多 MAX_TURNS 輪）
         for i, (q, r) in enumerate(st.session_state.get("chat_history", [])):
             if i >= MAX_TURNS:
                 break
             final_row[f"小Q 問題{i+1}"] = q
             final_row[f"小Q 回覆{i+1}"] = r['OUTPUT']['GUIDE'] or r['OUTPUT']['EVAL']
 
-        # ✅ GPT 對話（問題 + 回覆，最多 MAX_TURNS 輪）
+        # ✅ Step4: GPT 對話，逐輪填入問題+回覆（最多 MAX_TURNS 輪）
         gpt_chat = st.session_state.get("gpt_chat", [])
         gpt_pairs = [
             (gpt_chat[j][1], gpt_chat[j + 1][1])
@@ -408,10 +396,10 @@ elif st.session_state.page == 6:
             final_row[f"GPT 問題{i+1}"] = user_msg
             final_row[f"GPT 回覆{i+1}"] = gpt_msg
 
-        # ✅ 問卷答案
+        # ✅ Step5: 問卷答案
         final_row.update(responses)
 
-        # ✅ 讀入舊 Excel，強制套用固定欄位結構後寫入
+        # ✅ Step6: 讀入舊 Excel，強制補齊欄位後寫入
         try:
             df = pd.read_excel("Database.xlsx")
             for col in FIXED_COLUMNS:
@@ -426,6 +414,7 @@ elif st.session_state.page == 6:
         df.to_excel("Database.xlsx", index=False)
         st.success(ui_texts["survey_success"][lang_code])
 
+        # ✅ Step7: Google Sheet 備份
         try:
             from google_sheet_sync import write_to_google_sheet
             write_to_google_sheet(final_row)
@@ -452,7 +441,11 @@ elif st.session_state.page == 7:
         st.warning(ui_texts["admin_no_records"][lang_code])
     else:
         st.dataframe(df)
-        st.download_button(ui_texts["admin_export_excel"][lang_code], data=open("Database.xlsx", "rb").read(), file_name="Database.xlsx")
+        st.download_button(
+            ui_texts["admin_export_excel"][lang_code],
+            data=open("Database.xlsx", "rb").read(),
+            file_name="Database.xlsx"
+        )
         from io import BytesIO
         from fpdf import FPDF
         if st.button(ui_texts["admin_export_pdf"][lang_code], key="dl_pdf"):
@@ -473,4 +466,8 @@ elif st.session_state.page == 7:
             buffer = BytesIO()
             pdf.output(buffer)
             pdf_bytes = buffer.getvalue()
-            st.download_button(ui_texts["admin_download_pdf"][lang_code], data=pdf_bytes, file_name=f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")
+            st.download_button(
+                ui_texts["admin_download_pdf"][lang_code],
+                data=pdf_bytes,
+                file_name=f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+            )
