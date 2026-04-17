@@ -1,11 +1,28 @@
 import gspread
-import json
 import streamlit as st
 from oauth2client.service_account import ServiceAccountCredentials
 
+
 def write_to_google_sheet(row_data: dict):
     try:
-        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        required_keys = [
+            "gcp_project_id",
+            "gcp_private_key_id",
+            "gcp_private_key",
+            "gcp_client_email",
+            "gcp_client_id",
+            "gcp_client_x509_cert_url",
+        ]
+
+        missing_keys = [key for key in required_keys if key not in st.secrets]
+        if missing_keys:
+            print(f"❌ 缺少 Streamlit secrets: {missing_keys}")
+            return False
+
+        scope = [
+            "https://spreadsheets.google.com/feeds",
+            "https://www.googleapis.com/auth/drive",
+        ]
 
         creds_dict = {
             "type": "service_account",
@@ -25,14 +42,17 @@ def write_to_google_sheet(row_data: dict):
 
         sheet = client.open("Creativity Records").sheet1
 
-        existing_headers = sheet.row_values(1)
-        if not existing_headers:
-            sheet.insert_row(list(row_data.keys()), 1)
+        headers = sheet.row_values(1)
+        if not headers:
+            headers = list(row_data.keys())
+            sheet.insert_row(headers, 1)
 
-        row_values = [row_data.get(h, "") for h in sheet.row_values(1)]
+        row_values = [row_data.get(header, "") for header in headers]
         sheet.append_row(row_values)
+
         print("✅ Google Sheet 備份成功")
+        return True
 
     except Exception as e:
         print("❌ 寫入 Google Sheet 失敗：", e)
-        raise
+        return False
