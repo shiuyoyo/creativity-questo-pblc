@@ -7,7 +7,13 @@ from openai import OpenAI
 
 from chat import LLM
 from challenge_page import show_challenge_page
-from google_sheet_sync import write_to_google_sheet
+try:
+    from google_sheet_sync import write_to_google_sheet
+except Exception as e:
+    print("❌ 無法載入 google_sheet_sync:", e)
+
+    def write_to_google_sheet(row_data):
+        return False
 
 st.set_page_config(page_title="Questo - Creativity Assistant", layout="centered")
 
@@ -531,13 +537,19 @@ elif st.session_state.page == 6:
     with col2:
         if st.button(ui_texts["survey_submit"][lang_code], key="submit_survey_final"):
             final_row = build_final_row(responses)
+
+            # 先存 Excel
             save_row_to_excel(final_row)
             st.success(ui_texts["survey_success"][lang_code])
 
-            try:
-                write_to_google_sheet(final_row)
-            except Exception as e:
-                st.warning(ui_texts["survey_backup_warning"][lang_code].format(error=e))
+            # 再備份 Google Sheet
+            backup_success = write_to_google_sheet(final_row)
+            if not backup_success:
+                st.warning(
+                    ui_texts["survey_backup_warning"][lang_code].format(
+                        error="Google Sheet backup failed, but Excel was saved successfully."
+                    )
+                )
 
 # =========================================================
 # Page 7: 教師後台
