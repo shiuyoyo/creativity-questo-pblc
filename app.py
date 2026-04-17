@@ -8,7 +8,6 @@ from google_sheet_sync import write_to_google_sheet
 
 st.set_page_config(page_title="Questo - Creativity Assistant", layout="centered")
 
-# 🔁 接收網址中的 page=? 參數
 query_params = st.query_params
 if "page" in query_params and query_params["page"].isdigit():
     st.session_state.page = int(query_params["page"])
@@ -27,134 +26,44 @@ ui_texts = {
         "E": "To win the competition, what are three of the most creative ideas you can think of?",
         "C": "競賽奪冠：你能想出的三個最具創意的點子是什麼？"
     },
-    "idea_warning": {
-        "E": "⚠️ Please enter your ideas first!",
-        "C": "⚠️ 請先輸入構想內容！"
-    },
+    "idea_warning": {"E": "⚠️ Please enter your ideas first!", "C": "⚠️ 請先輸入構想內容！"},
     "littleq_input_prompt": {
         "E": "Now, you can use our AI Questioning Assistant, called 'Questo', to refine your questioning technique and generate more effective questions.Before you begin, please spend at least 5 minutes using Questo to ask questions related to the challenge of using old hotel towels to delight guests. Instead of providing answers, Questo will offer suggestions and recommendations on how to improve your questions. This will help you learn how to ask better questions and explore different perspectives. You can engage with Questo for as long as you like. When you're ready, click 'Next' to continue. Remember, Questo is designed to help you enhance your questioning skills, which is crucial for creative problem-solving.",
         "C": "現在，你可以使用我們名為 「Questo」 的 AI 提問助手，來磨練你的提問技巧並產生更有價值的問題。在開始之前，請至少花 5 分鐘 使用 Questo，針對**「如何利用舊飯店毛巾來驚艷顧客」**這個挑戰進行提問。Questo 不會直接給你答案，而是會針對如何改進你的提問方式提供建議與推薦。這將幫助你學習如何提問得更精確，並探索不同的觀點。你可以根據需求與 Questo 進行任何時長的互動。準備好後，請點擊「下一步」繼續。請記住，Questo 旨在幫助你提升提問技巧，而這正是創意解難（Creative Problem-solving）的關鍵。"
     },
-    "littleq_submit_button": {
-        "E": "Submit Question",
-        "C": "送出問題"
-    },
-    "littleq_no_response": {
-        "E": "⚠️ Little Q has no suggestions at the moment",
-        "C": "⚠️ 小Q暫時無提供建議"
-    },
+    "littleq_submit_button": {"E": "Submit Question", "C": "送出問題"},
+    "littleq_no_response": {"E": "⚠️ Little Q has no suggestions at the moment", "C": "⚠️ 小Q暫時無提供建議"},
     "gpt_input_label": {
         "E": "To spark your imagination, start by asking ChatGPT some questions about the hotel towel challenge below. See what ideas and insights you can gain, then use that inspiration to propose three more creative ideas.",
         "C": "為了激發你的想像力，請先針對下方的飯店毛巾挑戰向 ChatGPT 提出一些問題。看看你能獲得哪些靈感與洞察."
     },
-    "gpt_submit_button": {
-        "E": "Submit to ChatGPT",
-        "C": "送出給 ChatGPT"
-    },
-    "gpt_api_error": {
-        "E": "⚠️ Please set OPENAI_API_KEY in Streamlit Secrets",
-        "C": "⚠️ 請在 Streamlit Secrets 設定 OPENAI_API_KEY"
-    },
-    "gpt_response_error": {
-        "E": "OpenAI response error: {error}",
-        "C": "OpenAI 回應錯誤：{error}"
-    },
-    "gpt_system_prompt": {
-        "E": "You are an AI teaching assistant skilled in guiding creative thinking",
-        "C": "你是一位擅長引導創意思考的 AI 助教"
-    },
+    "gpt_submit_button": {"E": "Submit to ChatGPT", "C": "送出給 ChatGPT"},
+    "gpt_api_error": {"E": "⚠️ Please set OPENAI_API_KEY in Streamlit Secrets", "C": "⚠️ 請在 Streamlit Secrets 設定 OPENAI_API_KEY"},
+    "gpt_response_error": {"E": "OpenAI response error: {error}", "C": "OpenAI 回應錯誤：{error}"},
+    "gpt_system_prompt": {"E": "You are an AI teaching assistant skilled in guiding creative thinking", "C": "你是一位擅長引導創意思考的 AI 助教"},
     "final_idea_prompt": {
         "E": "Based on your experience and exploration, what are the three most creative ideas you can come up with?",
         "C": "根據您的體驗與探索，您能想到的三個最具創意的想法是什麼？"
     },
-    "final_idea_submit": {
-        "E": "Submit Final Ideas",
-        "C": "送出最終創意"
-    },
-    "final_idea_success": {
-        "E": "✅ Final ideas saved! Please continue to complete the questionnaire",
-        "C": "✅ 最終創意已儲存！請繼續完成問卷"
-    },
-    "survey_submit": {
-        "E": "📩 Submit Questionnaire",
-        "C": "📩 送出問卷"
-    },
-    "survey_success": {
-        "E": "✅ Thank you for completing the questionnaire and this task!",
-        "C": "✅ 感謝您填寫問卷並完成本次任務！"
-    },
-    "survey_backup_warning": {
-        "E": "⚠️ Google Sheet backup failed: {error}",
-        "C": "⚠️ Google Sheet 備份失敗：{error}"
-    },
-    "admin_title": {
-        "E": "🔒 Teacher Report Dashboard",
-        "C": "🔒 教師後台報表"
-    },
-    "admin_password_prompt": {
-        "E": "Please enter teacher password to view reports",
-        "C": "請輸入教師密碼以檢視報表"
-    },
-    "admin_password_warning": {
-        "E": "Please enter the correct password to access teacher page",
-        "C": "請輸入正確密碼以進入教師頁面"
-    },
-    "admin_login_success": {
-        "E": "Login successful ✅ Welcome to the teacher report page!",
-        "C": "登入成功 ✅ 歡迎使用教師報表頁！"
-    },
-    "admin_no_data_error": {
-        "E": "⚠️ Unable to read data, please confirm Database.xlsx exists",
-        "C": "⚠️ 無法讀取資料，請確認是否有正確的 Database.xlsx"
-    },
-    "admin_no_records": {
-        "E": "Currently no interaction records. Please confirm at least one student has submitted content.",
-        "C": "目前尚無任何互動紀錄。請確認至少有一位學生提交過內容。"
-    },
-    "admin_export_excel": {
-        "E": "📥 Export Excel",
-        "C": "📥 匯出 Excel"
-    },
-    "admin_export_pdf": {
-        "E": "📄 Download Integrated Report (PDF)",
-        "C": "📄 下載整合報表（PDF）"
-    },
-    "admin_download_pdf": {
-        "E": "📥 Click to Download PDF",
-        "C": "📥 點我下載 PDF"
-    },
-    "next_button": {"E": "Next", "C": "下一頁"},
-    "back_button": {"E": "Back", "C": "上一頁"},
+    "final_idea_submit": {"E": "Submit Final Ideas", "C": "送出最終創意"},
+    "final_idea_success": {"E": "✅ Final ideas saved! Please continue to complete the questionnaire", "C": "✅ 最終創意已儲存！請繼續完成問卷"},
+    "survey_submit": {"E": "📩 Submit Questionnaire", "C": "📩 送出問卷"},
+    "survey_success": {"E": "✅ Thank you for completing the questionnaire and this task!", "C": "✅ 感謝您填寫問卷並完成本次任務！"},
+    "survey_backup_warning": {"E": "⚠️ Google Sheet backup failed: {error}", "C": "⚠️ Google Sheet 備份失敗：{error}"},
+    "admin_title": {"E": "🔒 Teacher Report Dashboard", "C": "🔒 教師後台報表"},
+    "admin_password_prompt": {"E": "Please enter teacher password to view reports", "C": "請輸入教師密碼以檢視報表"},
+    "admin_password_warning": {"E": "Please enter the correct password to access teacher page", "C": "請輸入正確密碼以進入教師頁面"},
+    "admin_login_success": {"E": "Login successful ✅ Welcome to the teacher report page!", "C": "登入成功 ✅ 歡迎使用教師報表頁！"},
+    "admin_no_data_error": {"E": "⚠️ Unable to read data, please confirm Database.xlsx exists", "C": "⚠️ 無法讀取資料，請確認是否有正確的 Database.xlsx"},
+    "admin_no_records": {"E": "Currently no interaction records. Please confirm at least one student has submitted content.", "C": "目前尚無任何互動紀錄。請確認至少有一位學生提交過內容。"},
+    "admin_export_excel": {"E": "📥 Export Excel", "C": "📥 匯出 Excel"},
+    "admin_export_pdf": {"E": "📄 Download Integrated Report (PDF)", "C": "📄 下載整合報表（PDF）"},
+    "admin_download_pdf": {"E": "📥 Click to Download PDF", "C": "📥 點我下載 PDF"},
     "next_back_button": {"E": "Next / 下一頁", "C": "下一頁 / Next"},
     "back_next_button": {"E": "Back / 上一頁", "C": "上一頁 / Back"}
 }
 
-questions_text = {
-    "instruction": {
-        "E": "Based on your experience with this activity, choose the score that best represents your feelings. (1 = Strongly Disagree, 5 = Strongly Agree)",
-        "C": "請根據您在這次活動中的經驗，選擇最符合您感受的分數（1 = 非常不同意，5 = 非常同意）"
-    },
-    "questions": {
-        "E": [
-            "I found Little Q easy to use.",
-            "The interaction flow was smooth and clear.",
-            "Little Q's feedback was helpful.",
-            "I would recommend Little Q to others.",
-            "The interaction helped me think more creatively.",
-            "Other comments or suggestions (optional)"
-        ],
-        "C": [
-            "小Q提問助手的介面容易使用",
-            "整體互動流程清楚、順暢",
-            "小Q的回饋對我有幫助",
-            "我會推薦小Q給其他人",
-            "與小Q的互動提升了我的創意思考",
-            "其他建議或意見（非必填）"
-        ]
-    }
-}
-
-# ✅ 固定欄位結構（所有人共用，確保 Excel 欄位一致）
+# ✅ 固定欄位（questo 版：有小Q + GPT）
 MAX_TURNS = 15
 FIXED_COLUMNS = (
     ["時間戳記", "使用者編號", "語言", "初步構想", "最終構想"] +
@@ -186,7 +95,6 @@ st.markdown(
     "<div style='text-align: right; font-size: 0.9em;'>🔐 <a href='?page=7'>教師報表頁</a></div>",
     unsafe_allow_html=True
 )
-
 st.selectbox(
     "Choose your language / 選擇語言",
     ["English", "中文"],
@@ -194,7 +102,6 @@ st.selectbox(
     key="language",
     disabled=(st.session_state.page > 1)
 )
-
 lang_code = "E" if st.session_state.language == "English" else "C"
 
 def next_page():
@@ -204,7 +111,7 @@ def prev_page():
     st.session_state.page -= 1
 
 # =========================================================
-# 第 1 頁：活動挑戰說明
+# 第 1 頁
 # =========================================================
 if st.session_state.page == 1:
     show_challenge_page(lang_code, next_page)
@@ -285,10 +192,7 @@ elif st.session_state.page == 4:
                 for role, txt in st.session_state.gpt_chat:
                     history.append({"role": "user" if role == "user" else "assistant", "content": txt})
                 history.append({"role": "user", "content": msg})
-                response = client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=history
-                )
+                response = client.chat.completions.create(model="gpt-4o-mini", messages=history)
                 reply = response.choices[0].message.content
                 st.session_state.gpt_chat.append(("user", msg))
                 st.session_state.gpt_chat.append(("gpt", reply))
@@ -317,29 +221,10 @@ elif st.session_state.page == 5:
 # =========================================================
 elif st.session_state.page == 6:
     questionnaire_data = {
-        "title": {
-            "E": "🎯 Research Questionnaire",
-            "C": "🎯 研究問卷調查"
-        },
+        "title": {"E": "🎯 Research Questionnaire", "C": "🎯 研究問卷調查"},
         "scale_options": {
-            "E": [
-                "1: Strongly disagree",
-                "2: Disagree",
-                "3: Slightly disagree",
-                "4: Neutral",
-                "5: Slightly agree",
-                "6: Agree",
-                "7: Strongly agree"
-            ],
-            "C": [
-                "1: 非常不同意",
-                "2: 不同意",
-                "3: 有點不同意",
-                "4: 普通",
-                "5: 有點同意",
-                "6: 同意",
-                "7: 非常同意"
-            ]
+            "E": ["1: Strongly disagree","2: Disagree","3: Slightly disagree","4: Neutral","5: Slightly agree","6: Agree","7: Strongly agree"],
+            "C": ["1: 非常不同意","2: 不同意","3: 有點不同意","4: 普通","5: 有點同意","6: 同意","7: 非常同意"]
         },
         "sections": {
             "E": {
@@ -467,7 +352,6 @@ elif st.session_state.page == 6:
 
     st.title(questionnaire_data["title"][lang_code])
     st.markdown(f"**Scale: {' | '.join(questionnaire_data['scale_options'][lang_code])}**")
-
     responses = {}
     scale_options = questionnaire_data["scale_options"][lang_code]
 
@@ -496,11 +380,8 @@ elif st.session_state.page == 6:
         responses[f"future_{i+1}"] = int(selected_option.split(":")[0])
 
     if st.button(ui_texts["survey_submit"][lang_code], key="submit_survey_final"):
-
         # ✅ 建立本筆資料，先全部填空字串
         final_row = {col: "" for col in FIXED_COLUMNS}
-
-        # 基本資料
         final_row["時間戳記"] = datetime.now().isoformat()
         final_row["使用者編號"] = st.session_state.user_id
         final_row["語言"] = st.session_state.language
@@ -514,7 +395,7 @@ elif st.session_state.page == 6:
             final_row[f"小Q 問題{i+1}"] = q
             final_row[f"小Q 回覆{i+1}"] = r['OUTPUT']['GUIDE'] or r['OUTPUT']['EVAL']
 
-        # ✅ GPT 對話（問題 + 回覆都存，最多 MAX_TURNS 輪）
+        # ✅ GPT 對話（問題 + 回覆，最多 MAX_TURNS 輪）
         gpt_chat = st.session_state.get("gpt_chat", [])
         gpt_pairs = [
             (gpt_chat[j][1], gpt_chat[j + 1][1])
@@ -545,7 +426,6 @@ elif st.session_state.page == 6:
         df.to_excel("Database.xlsx", index=False)
         st.success(ui_texts["survey_success"][lang_code])
 
-        # ✅ 寫入 Google Sheet（失敗時提示）
         try:
             from google_sheet_sync import write_to_google_sheet
             write_to_google_sheet(final_row)
@@ -572,11 +452,7 @@ elif st.session_state.page == 7:
         st.warning(ui_texts["admin_no_records"][lang_code])
     else:
         st.dataframe(df)
-        st.download_button(
-            ui_texts["admin_export_excel"][lang_code],
-            data=open("Database.xlsx", "rb").read(),
-            file_name="Database.xlsx"
-        )
+        st.download_button(ui_texts["admin_export_excel"][lang_code], data=open("Database.xlsx", "rb").read(), file_name="Database.xlsx")
         from io import BytesIO
         from fpdf import FPDF
         if st.button(ui_texts["admin_export_pdf"][lang_code], key="dl_pdf"):
@@ -597,8 +473,4 @@ elif st.session_state.page == 7:
             buffer = BytesIO()
             pdf.output(buffer)
             pdf_bytes = buffer.getvalue()
-            st.download_button(
-                ui_texts["admin_download_pdf"][lang_code],
-                data=pdf_bytes,
-                file_name=f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
-            )
+            st.download_button(ui_texts["admin_download_pdf"][lang_code], data=pdf_bytes, file_name=f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")
